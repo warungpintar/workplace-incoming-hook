@@ -13,6 +13,7 @@ import (
 	"strconv"
 	"strings"
 	"time"
+	"net/url"
 )
 
 /*
@@ -35,6 +36,7 @@ var (
 	HttpTimeout     int        // Http timeout in second
 	ChatType		string
 	TuleapURL		string
+	Port 			string
 
 	// Misc
 	currentBuildID float64 = 0      // Current build ID
@@ -79,6 +81,7 @@ func LoadConf() {
 		HttpTimeout     float64
 		ChatType		string
 		TuleapURL 		string
+		Port			string
 	}{}
 
 	content, err := ioutil.ReadFile(*ConfigFile)
@@ -102,6 +105,7 @@ func LoadConf() {
 	HttpTimeout = int(conf.HttpTimeout)
 	ChatType = conf.ChatType
 	TuleapURL = conf.TuleapURL
+	Port = conf.Port
 }
 
 /*
@@ -411,7 +415,10 @@ func TaskHandler(body string) {
 	var date time.Time      // Time of the last commit
 
 	// Parse json and put it in a the data.Build structure
-	err = json.Unmarshal([]byte(body), &j)
+	payload := strings.Split(body,"payload=")
+	parsedValue, _ := url.QueryUnescape(payload[1])
+	
+	err = json.Unmarshal([]byte(parsedValue), &j)
 	if err != nil {
 		// Error
 		l.Error("Error : Json parser failed :", err)
@@ -469,5 +476,5 @@ func main() {
 	LoadConf()                                               // Load configuration
 	// SendWorkchatMessage(Thread, BotStartMessage, ChatType)       // Fb notification
 	l.Info(BotStartMessage)                                  // Logging
-	http.ListenAndServe(":8100", &GitlabServ{})             // Run HTTP server for push hook
+	http.ListenAndServe(":"+Port, &GitlabServ{})             // Run HTTP server for push hook
 }
