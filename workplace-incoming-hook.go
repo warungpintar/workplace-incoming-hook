@@ -34,6 +34,7 @@ var (
 	ShowAllCommits  bool       // Show all commits rather than latest
 	HttpTimeout     int        // Http timeout in second
 	ChatType		string
+	TuleapURL		string
 
 	// Misc
 	currentBuildID float64 = 0      // Current build ID
@@ -77,6 +78,7 @@ func LoadConf() {
 		ShowAllCommits  bool
 		HttpTimeout     float64
 		ChatType		string
+		TuleapURL 		string
 	}{}
 
 	content, err := ioutil.ReadFile(*ConfigFile)
@@ -99,6 +101,7 @@ func LoadConf() {
 	ShowAllCommits = conf.ShowAllCommits
 	HttpTimeout = int(conf.HttpTimeout)
 	ChatType = conf.ChatType
+	TuleapURL = conf.TuleapURL
 }
 
 /*
@@ -261,6 +264,8 @@ func (s *GitlabServ) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 		MergeHandler(body)
 	} else if gitlabEvent == "Build Hook" {
 		BuildHandler(body)
+	} else {
+		TaskHandler(body)
 	}
 }
 
@@ -390,6 +395,68 @@ func BuildHandler(body string) {
 		}
 	}
 
+}
+
+/*
+	Handler function to handle http requests for build
+
+	@param body string
+*/
+
+func TaskHandler(body string) {
+	var j data.Tptask
+	var Task data.TuleapTask
+	var err error           // Error catching
+	var message string = "" // Bot's message
+	var date time.Time      // Time of the last commit
+
+	// Parse json and put it in a the data.Build structure
+	err = json.Unmarshal([]byte(body), &j)
+	if err != nil {
+		// Error
+		l.Error("Error : Json parser failed :", err)
+	} else {
+		// Ok
+		// Debug information
+		if Verbose {
+			l.Debug("JsonObject =", j)
+		}
+		Task.Name = j.User.RealName
+		for _, val := range j.Current.Values {
+			switch val.Label {
+			case "Task title":
+				Task.TaskTitle = val.Value.(string)
+			case "Status":
+				Task.Status = val.VValues[0].Label
+			case "Links":
+				Task.ProjectURL = TuleapURL + "projects/" + string(val.Reverse_Links[0].Tracker.Project.ID)
+				Task.ProjectName = val.Reverse_Links[0].Tracker.Project.Label
+			case "Artifact ID":
+				Task.TaskID = strconv.FormatFloat(val.Value.(float64), 'f', 0, 64)
+				Task.TrackerURL = TuleapURL + "plugins/tracker/?aid=" + Task.TaskID
+			case "Submitted on":
+				Task.SubmittedOn = val.Value.(string)
+			case "Details":
+				Task.Details = val.Value.(string)
+			case "Type":
+				Task.Type = val.VValues[0].Label
+			}
+		}
+
+		date, err = time.Parse(time.RFC3339, Task.SubmittedOn)
+		var dateString = date.Format("02 Jan 06 15:04")
+
+		// Message
+		message += "Move Task *#" + Task.TaskID + "* [" + Task.TaskTitle + "] on Project *" + Task.ProjectName + "* by *[" + Task.Name + "]* at *" + dateString + "* to *[" + Task.Status + "]*" + n  // First line
+		message += "Description: " + MessageEncode(Task.Details) + n  // Third line (last commit message)
+		message += "Task URL : " + Task.TrackerURL
+		SendWorkchatMessage(Thread, message, ChatType)
+	}
+}
+
+func prettyPrint(i interface{}) string {
+    s, _ := json.MarshalIndent(i, "", "\t")
+    return string(s)
 }
 
 /*
