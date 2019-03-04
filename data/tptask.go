@@ -9,6 +9,7 @@ type TuleapTask struct {
 	TaskID string
 	Type string
 	Status string
+	OldStatus string
 	ProjectURL string
 	ProjectName string
 	TrackerURL string
@@ -20,6 +21,7 @@ type Tptask struct {
 	Action              string `json:"action"`
 	User               	User `json:"User"`
 	Current				Current `json:"current"`
+	Previous			Previous `json:"previous"`
 }
 
 type User struct {
@@ -28,6 +30,10 @@ type User struct {
 
 type Current struct	{
 	Submitted_On string `json:"submitted_on"`
+	Values []Values `json:"values"`
+}
+
+type Previous struct {
 	Values []Values `json:"values"`
 }
 

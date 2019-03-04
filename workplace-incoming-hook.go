@@ -462,15 +462,22 @@ func TaskHandler(body string) {
 				Task.Type = val.VValues[0].Label
 			}
 		}
+		for _, val := range j.Previous.Values {
+			if val.Label == "Status" {
+				Task.OldStatus = val.VValues[0].Label
+			}
+		}
 
-		date, err = time.Parse(time.RFC3339, Task.SubmittedOn)
-		var dateString = date.Format("02 Jan 06 15:04")
+		if Task.Status != Task.OldStatus { 
+			date, err = time.Parse(time.RFC3339, Task.SubmittedOn)
+			var dateString = date.Format("02 Jan 06 15:04")
 
-		// Message
-		message += "Move Task *#" + Task.TaskID + "* [" + Task.TaskTitle + "] on Project *" + Task.ProjectName + "* by *[" + Task.Name + "]* at *" + dateString + "* to *[" + Task.Status + "]*" + n  // First line
-		message += "Description: " + MessageEncode(Task.Details) + n  // Third line (last commit message)
-		message += "Task URL : " + Task.TrackerURL
-		SendWorkchatMessage(ThreadTuleap, message, ChatType)
+			// Message
+			message += "Move Task *#" + Task.TaskID + "* [" + Task.TaskTitle + "] on Project *" + Task.ProjectName + "* by *" + Task.Name + "* at *" + dateString + "* from *" + Task.OldStatus + "* to *" + Task.Status + "*" + n  // First line
+			message += "Description: " + MessageEncode(Task.Details) + n  // Third line (last commit message)
+			message += "Task URL : " + Task.TrackerURL
+			SendWorkchatMessage(ThreadTuleap, message, ChatType)
+		}
 	}
 }
 
