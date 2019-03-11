@@ -2,6 +2,7 @@ package main
 
 import (
 	"github.com/nurza/logo"
+	"github.com/grokify/html-strip-tags-go"
 	"workplaceincominghook/data"
 
 	"bytes"
@@ -449,15 +450,17 @@ func TaskHandler(body string) {
 			case "Status":
 				Task.Status = val.VValues[0].Label
 			case "Links":
-				Task.ProjectURL = TuleapURL + "projects/" + string(val.Reverse_Links[0].Tracker.Project.ID)
-				Task.ProjectName = val.Reverse_Links[0].Tracker.Project.Label
+				if len(val.Reverse_Links) > 0 {
+					Task.ProjectURL = TuleapURL + "projects/" + string(val.Reverse_Links[0].Tracker.Project.ID)
+					Task.ProjectName = val.Reverse_Links[0].Tracker.Project.Label
+				}
 			case "Artifact ID":
 				Task.TaskID = strconv.FormatFloat(val.Value.(float64), 'f', 0, 64)
 				Task.TrackerURL = TuleapURL + "plugins/tracker/?aid=" + Task.TaskID
 			case "Submitted on":
 				Task.SubmittedOn = val.Value.(string)
 			case "Details":
-				Task.Details = val.Value.(string)
+				Task.Details = strip.StripTags(val.Value.(string))
 			case "Type":
 				Task.Type = val.VValues[0].Label
 			}
@@ -466,7 +469,7 @@ func TaskHandler(body string) {
 			if val.Label == "Status" {
 				Task.OldStatus = val.VValues[0].Label
 			}
-		}
+		}	
 
 		if Task.Status != Task.OldStatus { 
 			date, err = time.Parse(time.RFC3339, Task.SubmittedOn)
