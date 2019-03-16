@@ -1,0 +1,13 @@
+{
+        "ThreadGitlab":         "GITLAB_THREAD",
+        "ThreadAppCenter":      "APPCENTER_THREAD",
+        "ThreadTuleap":         "TULEAP_THREAD",
+        "FbAPIUrl":             "https://graph.facebook.com/v3.2/me/messages?access_token=TOKEN",
+        "BotStartMessage":      "GitLab Workchat started \n and ready to party hard!",
+        "Verbose":              true,
+        "ShowAllCommits":   	true,
+        "HttpTimeout":          30,
+        "ChatType":             "group",
+        "TuleapURL":            "http://example.com/",
+        "Port":                 "80"
+}
