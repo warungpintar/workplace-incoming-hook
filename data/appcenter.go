@@ -5,6 +5,7 @@ package data
 */
 type AppCenter struct {
 	AppName			string `json:"app_name"`
+	AppDisplayName	string `json:"app_display_name"`
 	Branch			string `json:"branch"`
 	BuildStatus		string `json:"build_status"`
 	BuildID			string `json:"build_id"`
@@ -17,4 +18,8 @@ type AppCenter struct {
 	StartTime		string `json:"start_time"`
 	SourceVersion	string `json:"source_version"`
 	SentAt			string `json:"sent_at"`
+	Reason			string `json:"reason"`
+	ReleaseNotes	string `json:"release_notes"`
+	Name			string `json:"name"`
+	Url				string `json:"url"`
 }

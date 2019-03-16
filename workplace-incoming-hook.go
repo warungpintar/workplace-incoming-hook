@@ -514,9 +514,17 @@ func AppCenterHandler(body string) {
 		var dateString = date.Format("02 Jan 06 15:04")
 
 		// Message
-		message += "*" + j.AppName + "* (" + j.OS + ") Branch *" + j.Branch + "*" + n // First line
-		message += "Build *#" + j.BuildID + "* [" + j.BuildStatus + "] on " + dateString + n
-		message += "URL: " + j.BuildLink // Third line (last commit message)
+		message = ""
+		if j.Reason == "" {
+			message += "*" + j.AppName + "* (" + j.OS + ") Branch *" + j.Branch + "*" + n // First line
+			message += "Build *#" + j.BuildID + "* [" + j.BuildStatus + "] on " + dateString + n
+			message += "URL: " + j.BuildLink // Third line (last commit message)
+		} else {
+			message += "*Crash!!! [" + j.AppDisplayName + "]*" + n // First line
+			message += "Reason *" + j.Reason + "* [" + j.Name + "] on " + dateString + n
+			message += "URL: " + j.Url // Third line (last commit message)
+		}
+		
 		SendWorkchatMessage(ThreadAppCenter, message, ChatType)
 	}
 }
