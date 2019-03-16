@@ -11,4 +11,4 @@
 # Output of the go coverage tool, specifically when used with LiteIDE
 *.out
 config.json
-workplace-incoming-hook
+workplace-incoming-hookconfig.json.example
