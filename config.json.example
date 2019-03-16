@@ -9,5 +9,6 @@
         "HttpTimeout":          30,
         "ChatType":             "group",
         "TuleapURL":            "http://example.com/",
-        "Port":                 "80"
+        "Port":                 "80",
+        "UrlNoteHookFunction":  ""
 }

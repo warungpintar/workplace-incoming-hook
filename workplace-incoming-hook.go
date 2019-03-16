@@ -1,9 +1,9 @@
 package main
 
 import (
+	strip "github.com/grokify/html-strip-tags-go"
 	"github.com/nurza/logo"
-	"github.com/grokify/html-strip-tags-go"
-	"workplaceincominghook/data"
+	"github.com/warungpintar/workplaceincominghook/data"
 
 	"bytes"
 	"encoding/json"
@@ -11,10 +11,10 @@ import (
 	"io/ioutil"
 	"net"
 	"net/http"
+	"net/url"
 	"strconv"
 	"strings"
 	"time"
-	"net/url"
 )
 
 /*
@@ -26,24 +26,25 @@ var (
 	Loggers []*logo.Logger
 
 	// Configuration
-	Thread      	string     // Bot's system channel
-	ThreadGitlab	string
-	ThreadTuleap	string
-	ThreadAppCenter	string
-	PushIcon        string     // Push icon (Fb emoji)
-	MergeIcon       string     // Merge icon (Fb emoji)
-	BuildIcon       string     // Build icon (Fb emoji)
-	BotStartMessage string     // Bot's start message
-	FbAPIUrl     	string     // Fb API URL
-	Verbose         bool       // Enable verbose mode
-	ShowAllCommits  bool       // Show all commits rather than latest
-	HttpTimeout     int        // Http timeout in second
-	ChatType		string
-	TuleapURL		string
-	Port 			string
+	Thread              string // Bot's system channel
+	ThreadGitlab        string
+	ThreadTuleap        string
+	ThreadAppCenter     string
+	PushIcon            string // Push icon (Fb emoji)
+	MergeIcon           string // Merge icon (Fb emoji)
+	BuildIcon           string // Build icon (Fb emoji)
+	BotStartMessage     string // Bot's start message
+	FbAPIUrl            string // Fb API URL
+	Verbose             bool   // Enable verbose mode
+	ShowAllCommits      bool   // Show all commits rather than latest
+	HttpTimeout         int    // Http timeout in second
+	ChatType            string
+	TuleapURL           string
+	Port                string
+	UrlNoteHookFunction string
 
 	// Misc
-	currentBuildID float64 = 0      // Current build ID
+	currentBuildID float64 = 0       // Current build ID
 	n              string  = "%5CnX" // Encoded line return
 )
 
@@ -68,20 +69,21 @@ const (
 */
 func LoadConf() {
 	conf := struct {
-		ThreadGitlab	string
-		ThreadAppCenter	string
-		ThreadTuleap	string
-		PushIcon        string
-		MergeIcon       string
-		BuildIcon       string
-		BotStartMessage string
-		FbAPIUrl     	string
-		Verbose         bool
-		ShowAllCommits  bool
-		HttpTimeout     float64
-		ChatType		string
-		TuleapURL 		string
-		Port			string
+		ThreadGitlab        string
+		ThreadAppCenter     string
+		ThreadTuleap        string
+		PushIcon            string
+		MergeIcon           string
+		BuildIcon           string
+		BotStartMessage     string
+		FbAPIUrl            string
+		Verbose             bool
+		ShowAllCommits      bool
+		HttpTimeout         float64
+		ChatType            string
+		TuleapURL           string
+		Port                string
+		UrlNoteHookFunction string
 	}{}
 
 	content, err := ioutil.ReadFile(*ConfigFile)
@@ -108,6 +110,7 @@ func LoadConf() {
 	ThreadGitlab = conf.ThreadGitlab
 	ThreadAppCenter = conf.ThreadAppCenter
 	ThreadTuleap = conf.ThreadTuleap
+	UrlNoteHookFunction = conf.UrlNoteHookFunction
 }
 
 /*
@@ -176,7 +179,7 @@ func MessageEncodeX(origin string) string {
 	var result string = ""
 
 	result = strings.Replace(origin, "%5CnX", "\\n\\n", -1)
-	
+
 	return result
 }
 
@@ -218,7 +221,6 @@ func SendWorkchatMessage(channel, message string, chattype string) {
 	} else {
 		payload += `{"recipient": { "id": "` + strings.ToLower(channel) + `"} , "message": { "text": "` + message + `"}}`
 	}
-	
 
 	// Debug information
 	if Verbose {
@@ -245,7 +247,7 @@ func SendWorkchatMessage(channel, message string, chattype string) {
 func (s *GitlabServ) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	var buffer bytes.Buffer // Buffer to get request body
 	var body string         // Request body (it's a json)
-	
+
 	// Log
 	l.Info("Request")
 
@@ -283,11 +285,40 @@ func (s *GitlabServ) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 			MergeHandler(body)
 		case "Build Hook":
 			BuildHandler(body)
+		case "Note Hook":
+			CommentHandler(body)
 		}
 	}
 }
 
-func PushHandler(body string){
+// CommentHandler call cloud function which handle comment event on gitlab
+// and send to workplace bot
+func CommentHandler(body string) {
+
+	// whether UrlNoteHookFunction has been set #see on config.json
+	if UrlNoteHookFunction == "" {
+		l.Error("url comment service not ")
+		return
+	}
+
+	var json = []byte(body)
+	req, err := http.NewRequest("POST", UrlNoteHookFunction, bytes.NewBuffer(json))
+	req.Header.Set("X-Gitlab-Event", "Note Hook")
+	req.Header.Set("Content-Type", "application/json")
+
+	l.Info("Call service note hook")
+	client := &http.Client{}
+	resp, err := client.Do(req)
+	if err != nil {
+		l.Error("Error : call [POST] microservice failed :", err)
+	}
+	defer resp.Body.Close()
+
+	l.Info("Response status :", resp.Status)
+	l.Info("Response header :", resp.Header)
+}
+
+func PushHandler(body string) {
 	var j data.Push
 	var err error           // Error catching
 	var message string = "" // Bot's message
@@ -315,15 +346,15 @@ func PushHandler(body string){
 		lastCommit := j.Commits[len(j.Commits)-1]
 		commitCount := strconv.FormatFloat(j.Total_commits_count, 'f', 0, 64)
 		if ShowAllCommits {
-			message += "Push on *" + j.Repository.Name + "* by *" + j.User_name + "* at *" + dateString + "* on branch *" + j.Ref + "*:" + n  // First line
-			message += commitCount + " commits :"  // Second line
+			message += "Push on *" + j.Repository.Name + "* by *" + j.User_name + "* at *" + dateString + "* on branch *" + j.Ref + "*:" + n // First line
+			message += commitCount + " commits :"                                                                                            // Second line
 			for i := range j.Commits {
 				c := j.Commits[i]
-				message += n + "< " + c.Url + " | " + c.Id[0:7] + " >: " + "_" + MessageEncode(c.Message) + "_" 
+				message += n + "< " + c.Url + " | " + c.Id[0:7] + " >: " + "_" + MessageEncode(c.Message) + "_"
 			}
 		} else {
-			message += "[PUSH] " + n + "Push on *" + j.Repository.Name + "* by *" + j.User_name + "* at *" + dateString + "* on branch *" + j.Ref + "*:" + n  // First line
-			message += "Last commit : < " + lastCommit.Url + " | " + lastCommit.Id + " > :" + n                                                                   // Second line
+			message += "[PUSH] " + n + "Push on *" + j.Repository.Name + "* by *" + j.User_name + "* at *" + dateString + "* on branch *" + j.Ref + "*:" + n // First line
+			message += "Last commit : < " + lastCommit.Url + " | " + lastCommit.Id + " > :" + n                                                              // Second line
 			message += "```" + MessageEncode(lastCommit.Message) + "```"                                                                                     // Third line (last commit message)
 		}
 		SendWorkchatMessage(ThreadGitlab, message, ChatType)
@@ -361,7 +392,7 @@ func MergeHandler(body string) {
 
 		// Message
 		message += "[MERGE REQUEST " + strings.ToUpper(j.Object_attributes.State) + "] " + n + "Target : *" + j.Object_attributes.Target.Name + "/" + j.Object_attributes.Target_branch + "* Source : *" + j.Object_attributes.Source.Name + "/" + j.Object_attributes.Source_branch + "* at *" + dateString + "* " + n // First line
-		message += "Description: " + MessageEncode(j.Object_attributes.Description)                                                                                                                                                                                                                                          // Third line (last commit message)
+		message += "Description: " + MessageEncode(j.Object_attributes.Description)                                                                                                                                                                                                                                     // Third line (last commit message)
 		SendWorkchatMessage(ThreadGitlab, message, ChatType)
 	}
 }
@@ -429,9 +460,9 @@ func TaskHandler(body string) {
 	var date time.Time      // Time of the last commit
 
 	// Parse json and put it in a the data.Build structure
-	payload := strings.Split(body,"payload=")
+	payload := strings.Split(body, "payload=")
 	parsedValue, _ := url.QueryUnescape(payload[1])
-	
+
 	err = json.Unmarshal([]byte(parsedValue), &j)
 	if err != nil {
 		// Error
@@ -469,15 +500,15 @@ func TaskHandler(body string) {
 			if val.Label == "Status" {
 				Task.OldStatus = val.VValues[0].Label
 			}
-		}	
+		}
 
-		if Task.Status != Task.OldStatus { 
+		if Task.Status != Task.OldStatus {
 			date, err = time.Parse(time.RFC3339, Task.SubmittedOn)
 			var dateString = date.Format("02 Jan 06 15:04")
 
 			// Message
-			message += "Move Task *#" + Task.TaskID + "* [" + Task.TaskTitle + "] on Project *" + Task.ProjectName + "* by *" + Task.Name + "* at *" + dateString + "* from *" + Task.OldStatus + "* to *" + Task.Status + "*" + n  // First line
-			message += "Description: " + MessageEncode(Task.Details) + n  // Third line (last commit message)
+			message += "Move Task *#" + Task.TaskID + "* [" + Task.TaskTitle + "] on Project *" + Task.ProjectName + "* by *" + Task.Name + "* at *" + dateString + "* from *" + Task.OldStatus + "* to *" + Task.Status + "*" + n // First line
+			message += "Description: " + MessageEncode(Task.Details) + n                                                                                                                                                           // Third line (last commit message)
 			message += "Task URL : " + Task.TrackerURL
 			SendWorkchatMessage(ThreadTuleap, message, ChatType)
 		}
@@ -524,7 +555,7 @@ func AppCenterHandler(body string) {
 			message += "Reason *" + j.Reason + "* [" + j.Name + "] on " + dateString + n
 			message += "URL: " + j.Url // Third line (last commit message)
 		}
-		
+
 		SendWorkchatMessage(ThreadAppCenter, message, ChatType)
 	}
 }
