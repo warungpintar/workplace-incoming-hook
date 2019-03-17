@@ -44,8 +44,8 @@ var (
 	URLNoteHookFunction string
 
 	// Misc
-	currentBuildID float64 = 0       // Current build ID
-	n              string  = "%5CnX" // Encoded line return
+	currentBuildID float64   // Current build ID
+	n              = "%5CnX" // Encoded line return
 )
 
 type GitlabServ struct{}
