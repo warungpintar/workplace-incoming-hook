@@ -79,7 +79,7 @@ func LoadConf() {
 		FbAPIUrl            string
 		Verbose             bool
 		ShowAllCommits      bool
-		HttpTimeout         float64
+		HTTPTimeout         float64
 		ChatType            string
 		TuleapURL           string
 		Port                string
@@ -103,7 +103,7 @@ func LoadConf() {
 	FbAPIUrl = conf.FbAPIUrl
 	Verbose = conf.Verbose
 	ShowAllCommits = conf.ShowAllCommits
-	HTTPTimeout = int(conf.HttpTimeout)
+	HTTPTimeout = int(conf.HTTPTimeout)
 	ChatType = conf.ChatType
 	TuleapURL = conf.TuleapURL
 	Port = conf.Port
