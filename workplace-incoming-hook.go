@@ -522,9 +522,9 @@ func TaskHandler(body string) {
 */
 func AppCenterHandler(body string) {
 	var j data.AppCenter
-	var err error           // Error catching
-	var message string = "" // Bot's message
-	var date time.Time      // Time of the last commit
+	var err error      // Error catching
+	var message string // Bot's message
+	var date time.Time // Time of the last commit
 
 	// Parse json and put it in a the data.Build structure
 	err = json.Unmarshal([]byte(body), &j)
