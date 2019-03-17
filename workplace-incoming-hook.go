@@ -37,7 +37,7 @@ var (
 	FbAPIUrl            string // Fb API URL
 	Verbose             bool   // Enable verbose mode
 	ShowAllCommits      bool   // Show all commits rather than latest
-	HttpTimeout         int    // Http timeout in second
+	HTTPTimeout         int    // Http timeout in second
 	ChatType            string
 	TuleapURL           string
 	Port                string
@@ -103,7 +103,7 @@ func LoadConf() {
 	FbAPIUrl = conf.FbAPIUrl
 	Verbose = conf.Verbose
 	ShowAllCommits = conf.ShowAllCommits
-	HttpTimeout = int(conf.HttpTimeout)
+	HTTPTimeout = int(conf.HttpTimeout)
 	ChatType = conf.ChatType
 	TuleapURL = conf.TuleapURL
 	Port = conf.Port
@@ -141,10 +141,10 @@ func Post(target string, payload string) (int, string) {
 	client.Transport = &http.Transport{
 		Proxy: http.ProxyFromEnvironment,
 		Dial: (&net.Dialer{
-			Timeout:   time.Duration(HttpTimeout) * time.Second,
-			KeepAlive: time.Duration(HttpTimeout) * time.Second,
+			Timeout:   time.Duration(HTTPTimeout) * time.Second,
+			KeepAlive: time.Duration(HTTPTimeout) * time.Second,
 		}).Dial,
-		TLSHandshakeTimeout: time.Duration(HttpTimeout) * time.Second,
+		TLSHandshakeTimeout: time.Duration(HTTPTimeout) * time.Second,
 	}
 
 	res, err = client.Do(req)
