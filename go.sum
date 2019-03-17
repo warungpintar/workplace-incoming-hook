@@ -1,0 +1,6 @@
+github.com/grokify/html-strip-tags-go v0.0.0-20180907063347-e9e44961e26f h1:CTesHAvAG+NLVJQjbN26kTriSz5YMpeEN0iwVCA37x8=
+github.com/grokify/html-strip-tags-go v0.0.0-20180907063347-e9e44961e26f/go.mod h1:Xk7G0nwBiIloTMbLddk4WWJOqi4i/JLhadLd0HUXO30=
+github.com/huandu/goroutine v0.0.0-20180206030456-53e1d22d487d h1:uHrEbJUpqMEQsf785s/6s1yBPH76Sj/pw4TAm0zR1nc=
+github.com/huandu/goroutine v0.0.0-20180206030456-53e1d22d487d/go.mod h1:8rT1IECKy34l/ZqdpG+WxeNrtj3kn1Ec8ngq0pWHrMQ=
+github.com/nurza/logo v0.0.0-20180212153657-bcfdb5a0b6e5 h1:KL4vJYB2ppQaiS1rVvVOLrnAh5JjDhWZEvaH4dP85eM=
+github.com/nurza/logo v0.0.0-20180212153657-bcfdb5a0b6e5/go.mod h1:Mg1l2lMjJKqngJgWLlwmrOw3Jiey7lb9EgrNKU5Tvzg=
