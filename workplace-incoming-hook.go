@@ -83,7 +83,7 @@ func LoadConf() {
 		ChatType            string
 		TuleapURL           string
 		Port                string
-		UrlNoteHookFunction string
+		URLNoteHookFunction string
 	}{}
 
 	content, err := ioutil.ReadFile(*ConfigFile)
@@ -110,7 +110,7 @@ func LoadConf() {
 	ThreadGitlab = conf.ThreadGitlab
 	ThreadAppCenter = conf.ThreadAppCenter
 	ThreadTuleap = conf.ThreadTuleap
-	URLNoteHookFunction = conf.UrlNoteHookFunction
+	URLNoteHookFunction = conf.URLNoteHookFunction
 }
 
 /*
