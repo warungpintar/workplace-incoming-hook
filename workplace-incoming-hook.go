@@ -393,6 +393,38 @@ func MergeHandler(body string) {
 		// Message
 		message += "[MERGE REQUEST " + strings.ToUpper(j.Object_attributes.State) + "] " + n + "Target : *" + j.Object_attributes.Target.Name + "/" + j.Object_attributes.Target_branch + "* Source : *" + j.Object_attributes.Source.Name + "/" + j.Object_attributes.Source_branch + "* at *" + dateString + "* " + n // First line
 		message += "Description: " + MessageEncode(j.Object_attributes.Description)                                                                                                                                                                                                                                     // Third line (last commit message)
+
+		if len(j.Changes.Labels.Current) > 0 || len(j.Changes.Labels.Previous) > 0 {
+			message += n + " [LABELS] "
+			for _, currentLabel := range j.Changes.Labels.Current {
+				added := true
+				for _, previousLabel := range j.Changes.Labels.Previous {
+					if currentLabel.ID == previousLabel.ID {
+						added = false
+						break
+					}
+				}
+
+				if added {
+					message += n + "`" + currentLabel.Title + "`" + " " + "*Added*"
+				}
+			}
+
+			for _, previousLabel := range j.Changes.Labels.Previous {
+				removed := true
+				for _, currentLabel := range j.Changes.Labels.Current {
+					if previousLabel.ID == currentLabel.ID {
+						removed = false
+						break
+					}
+				}
+
+				if removed {
+					message += n + "`" + previousLabel.Title + "`" + " " + "*Removed*"
+				}
+			}
+		}
+
 		SendWorkchatMessage(ThreadGitlab, message, ChatType)
 	}
 }
