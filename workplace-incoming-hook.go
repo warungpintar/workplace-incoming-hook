@@ -41,7 +41,7 @@ var (
 	ChatType            string
 	TuleapURL           string
 	Port                string
-	UrlNoteHookFunction string
+	URLNoteHookFunction string
 
 	// Misc
 	currentBuildID float64 = 0       // Current build ID
@@ -110,7 +110,7 @@ func LoadConf() {
 	ThreadGitlab = conf.ThreadGitlab
 	ThreadAppCenter = conf.ThreadAppCenter
 	ThreadTuleap = conf.ThreadTuleap
-	UrlNoteHookFunction = conf.UrlNoteHookFunction
+	URLNoteHookFunction = conf.UrlNoteHookFunction
 }
 
 /*
@@ -296,13 +296,13 @@ func (s *GitlabServ) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 func CommentHandler(body string) {
 
 	// whether UrlNoteHookFunction has been set #see on config.json
-	if UrlNoteHookFunction == "" {
+	if URLNoteHookFunction == "" {
 		l.Error("url comment service not ")
 		return
 	}
 
 	var json = []byte(body)
-	req, err := http.NewRequest("POST", UrlNoteHookFunction, bytes.NewBuffer(json))
+	req, err := http.NewRequest("POST", URLNoteHookFunction, bytes.NewBuffer(json))
 	req.Header.Set("X-Gitlab-Event", "Note Hook")
 	req.Header.Set("Content-Type", "application/json")
 
