@@ -6,6 +6,7 @@ package data
 type Merge struct {
 	Object_kind       string
 	Object_attributes Object_attributes
+	Changes           Changes `json:"changes"`
 }
 
 type Object_attributes struct {
@@ -37,4 +38,29 @@ type Branche struct {
 	Http_url         string
 	Visibility_level float64
 	Namespace        string
+}
+
+// Changes object shape from Gitlab payload
+type Changes struct {
+	Labels Labels `json:"labels"`
+}
+
+// Labels object shape from Gitlab payload
+type Labels struct {
+	Previous []Label `json:"previous"`
+	Current  []Label `json:"current"`
+}
+
+// Label object shape from Gitlab payload
+type Label struct {
+	ID          int64       `json:"id"`
+	Title       string      `json:"title"`
+	Color       string      `json:"color"`
+	ProjectID   interface{} `json:"project_id"`
+	CreatedAt   string      `json:"created_at"`
+	UpdatedAt   string      `json:"updated_at"`
+	Template    bool        `json:"template"`
+	Description string      `json:"description"`
+	Type        string      `json:"type"`
+	GroupID     int64       `json:"group_id"`
 }
