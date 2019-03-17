@@ -176,7 +176,7 @@ func Post(target string, payload string) (int, string) {
 */
 
 func MessageEncodeX(origin string) string {
-	var result string = ""
+	var result string
 
 	result = strings.Replace(origin, "%5CnX", "\\n\\n", -1)
 
@@ -184,7 +184,7 @@ func MessageEncodeX(origin string) string {
 }
 
 func MessageEncode(origin string) string {
-	var result string = ""
+	var result string
 
 	for _, e := range strings.Split(origin, "") {
 		switch e {
@@ -320,9 +320,9 @@ func CommentHandler(body string) {
 
 func PushHandler(body string) {
 	var j data.Push
-	var err error           // Error catching
-	var message string = "" // Bot's message
-	var date time.Time      // Time of the last commit
+	var err error      // Error catching
+	var message string // Bot's message
+	var date time.Time // Time of the last commit
 
 	// Parse json and put it in a the data.Build structure
 	err = json.Unmarshal([]byte(body), &j)
@@ -368,9 +368,9 @@ func PushHandler(body string) {
 */
 func MergeHandler(body string) {
 	var j data.Merge
-	var err error           // Error catching
-	var message string = "" // Bot's message
-	var date time.Time      // Time of the last commit
+	var err error      // Error catching
+	var message string // Bot's message
+	var date time.Time // Time of the last commit
 
 	// Parse json and put it in a the data.Build structure
 	err = json.Unmarshal([]byte(body), &j)
@@ -404,9 +404,9 @@ func MergeHandler(body string) {
 */
 func BuildHandler(body string) {
 	var j data.Build
-	var err error           // Error catching
-	var message string = "" // Bot's message
-	var date time.Time      // Time of the last commit
+	var err error      // Error catching
+	var message string // Bot's message
+	var date time.Time // Time of the last commit
 
 	// Parse json and put it in a the data.Build structure
 	err = json.Unmarshal([]byte(body), &j)
@@ -455,9 +455,9 @@ func BuildHandler(body string) {
 func TaskHandler(body string) {
 	var j data.Tptask
 	var Task data.TuleapTask
-	var err error           // Error catching
-	var message string = "" // Bot's message
-	var date time.Time      // Time of the last commit
+	var err error      // Error catching
+	var message string // Bot's message
+	var date time.Time // Time of the last commit
 
 	// Parse json and put it in a the data.Build structure
 	payload := strings.Split(body, "payload=")
