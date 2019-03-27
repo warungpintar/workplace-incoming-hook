@@ -37,15 +37,15 @@ var (
 	FbAPIUrl            string // Fb API URL
 	Verbose             bool   // Enable verbose mode
 	ShowAllCommits      bool   // Show all commits rather than latest
-	HttpTimeout         int    // Http timeout in second
+	HTTPTimeout         int    // Http timeout in second
 	ChatType            string
 	TuleapURL           string
 	Port                string
-	UrlNoteHookFunction string
+	URLNoteHookFunction string
 
 	// Misc
-	currentBuildID float64 = 0       // Current build ID
-	n              string  = "%5CnX" // Encoded line return
+	currentBuildID float64   // Current build ID
+	n              = "%5CnX" // Encoded line return
 )
 
 type GitlabServ struct{}
@@ -79,11 +79,11 @@ func LoadConf() {
 		FbAPIUrl            string
 		Verbose             bool
 		ShowAllCommits      bool
-		HttpTimeout         float64
+		HTTPTimeout         float64
 		ChatType            string
 		TuleapURL           string
 		Port                string
-		UrlNoteHookFunction string
+		URLNoteHookFunction string
 	}{}
 
 	content, err := ioutil.ReadFile(*ConfigFile)
@@ -103,14 +103,14 @@ func LoadConf() {
 	FbAPIUrl = conf.FbAPIUrl
 	Verbose = conf.Verbose
 	ShowAllCommits = conf.ShowAllCommits
-	HttpTimeout = int(conf.HttpTimeout)
+	HTTPTimeout = int(conf.HTTPTimeout)
 	ChatType = conf.ChatType
 	TuleapURL = conf.TuleapURL
 	Port = conf.Port
 	ThreadGitlab = conf.ThreadGitlab
 	ThreadAppCenter = conf.ThreadAppCenter
 	ThreadTuleap = conf.ThreadTuleap
-	UrlNoteHookFunction = conf.UrlNoteHookFunction
+	URLNoteHookFunction = conf.URLNoteHookFunction
 }
 
 /*
@@ -141,10 +141,10 @@ func Post(target string, payload string) (int, string) {
 	client.Transport = &http.Transport{
 		Proxy: http.ProxyFromEnvironment,
 		Dial: (&net.Dialer{
-			Timeout:   time.Duration(HttpTimeout) * time.Second,
-			KeepAlive: time.Duration(HttpTimeout) * time.Second,
+			Timeout:   time.Duration(HTTPTimeout) * time.Second,
+			KeepAlive: time.Duration(HTTPTimeout) * time.Second,
 		}).Dial,
-		TLSHandshakeTimeout: time.Duration(HttpTimeout) * time.Second,
+		TLSHandshakeTimeout: time.Duration(HTTPTimeout) * time.Second,
 	}
 
 	res, err = client.Do(req)
@@ -176,7 +176,7 @@ func Post(target string, payload string) (int, string) {
 */
 
 func MessageEncodeX(origin string) string {
-	var result string = ""
+	var result string
 
 	result = strings.Replace(origin, "%5CnX", "\\n\\n", -1)
 
@@ -184,7 +184,7 @@ func MessageEncodeX(origin string) string {
 }
 
 func MessageEncode(origin string) string {
-	var result string = ""
+	var result string
 
 	for _, e := range strings.Split(origin, "") {
 		switch e {
@@ -296,13 +296,13 @@ func (s *GitlabServ) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 func CommentHandler(body string) {
 
 	// whether UrlNoteHookFunction has been set #see on config.json
-	if UrlNoteHookFunction == "" {
+	if URLNoteHookFunction == "" {
 		l.Error("url comment service not ")
 		return
 	}
 
 	var json = []byte(body)
-	req, err := http.NewRequest("POST", UrlNoteHookFunction, bytes.NewBuffer(json))
+	req, err := http.NewRequest("POST", URLNoteHookFunction, bytes.NewBuffer(json))
 	req.Header.Set("X-Gitlab-Event", "Note Hook")
 	req.Header.Set("Content-Type", "application/json")
 
@@ -320,9 +320,9 @@ func CommentHandler(body string) {
 
 func PushHandler(body string) {
 	var j data.Push
-	var err error           // Error catching
-	var message string = "" // Bot's message
-	var date time.Time      // Time of the last commit
+	var err error      // Error catching
+	var message string // Bot's message
+	var date time.Time // Time of the last commit
 
 	// Parse json and put it in a the data.Build structure
 	err = json.Unmarshal([]byte(body), &j)
@@ -368,9 +368,9 @@ func PushHandler(body string) {
 */
 func MergeHandler(body string) {
 	var j data.Merge
-	var err error           // Error catching
-	var message string = "" // Bot's message
-	var date time.Time      // Time of the last commit
+	var err error      // Error catching
+	var message string // Bot's message
+	var date time.Time // Time of the last commit
 
 	// Parse json and put it in a the data.Build structure
 	err = json.Unmarshal([]byte(body), &j)
@@ -404,9 +404,9 @@ func MergeHandler(body string) {
 */
 func BuildHandler(body string) {
 	var j data.Build
-	var err error           // Error catching
-	var message string = "" // Bot's message
-	var date time.Time      // Time of the last commit
+	var err error      // Error catching
+	var message string // Bot's message
+	var date time.Time // Time of the last commit
 
 	// Parse json and put it in a the data.Build structure
 	err = json.Unmarshal([]byte(body), &j)
@@ -455,9 +455,9 @@ func BuildHandler(body string) {
 func TaskHandler(body string) {
 	var j data.Tptask
 	var Task data.TuleapTask
-	var err error           // Error catching
-	var message string = "" // Bot's message
-	var date time.Time      // Time of the last commit
+	var err error      // Error catching
+	var message string // Bot's message
+	var date time.Time // Time of the last commit
 
 	// Parse json and put it in a the data.Build structure
 	payload := strings.Split(body, "payload=")
@@ -522,9 +522,9 @@ func TaskHandler(body string) {
 */
 func AppCenterHandler(body string) {
 	var j data.AppCenter
-	var err error           // Error catching
-	var message string = "" // Bot's message
-	var date time.Time      // Time of the last commit
+	var err error      // Error catching
+	var message string // Bot's message
+	var date time.Time // Time of the last commit
 
 	// Parse json and put it in a the data.Build structure
 	err = json.Unmarshal([]byte(body), &j)
