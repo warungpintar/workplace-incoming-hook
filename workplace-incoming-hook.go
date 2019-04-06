@@ -3,7 +3,7 @@ package main
 import (
 	strip "github.com/grokify/html-strip-tags-go"
 	"github.com/nurza/logo"
-	"github.com/warungpintar/workplaceincominghook/data"
+	"workplace-incoming-hook/data"
 
 	"bytes"
 	"encoding/json"
@@ -578,7 +578,11 @@ func AppCenterHandler(body string) {
 
 		// Message
 		message = ""
-		if j.Reason == "" {
+		if j.DistributionGroupID != "" {
+			message += "*Distributed [" + j.AppDisplayName + "]*" + n // First line
+			message += "Group ID *" + j.DistributionGroupID + "* on " + dateString + n
+			message += "Install Link: " + j.InstallLink // Third line (last commit message)
+		} else if j.Reason == "" {
 			message += "*" + j.AppName + "* (" + j.OS + ") Branch *" + j.Branch + "*" + n // First line
 			message += "Build *#" + j.BuildID + "* [" + j.BuildStatus + "] on " + dateString + n
 			message += "URL: " + j.BuildLink // Third line (last commit message)
