@@ -1,9 +1,10 @@
 package main
 
 import (
+	"github.com/warungpintar/workplace-incoming-hook/data"
+
 	strip "github.com/grokify/html-strip-tags-go"
 	"github.com/nurza/logo"
-	"workplace-incoming-hook/data"
 
 	"bytes"
 	"encoding/json"

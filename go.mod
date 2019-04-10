@@ -1,4 +1,4 @@
-module github.com/warungpintar/workplaceincominghook
+module github.com/warungpintar/workplace-incoming-hook
 
 require (
 	github.com/grokify/html-strip-tags-go v0.0.0-20180907063347-e9e44961e26f
