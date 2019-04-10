@@ -4,33 +4,33 @@ package data
 	Stuctures of a push
 */
 type TuleapTask struct {
-	Name string
-	TaskTitle string
-	TaskID string
-	Type string
-	Status string
-	OldStatus string
-	ProjectURL string
+	Name        string
+	TaskTitle   string
+	TaskID      string
+	Type        string
+	Status      string
+	OldStatus   string
+	ProjectURL  string
 	ProjectName string
-	TrackerURL string
+	TrackerURL  string
 	SubmittedOn string
-	Details string
+	Details     string
 }
 
 type Tptask struct {
-	Action              string `json:"action"`
-	User               	User `json:"User"`
-	Current				Current `json:"current"`
-	Previous			Previous `json:"previous"`
+	Action   string   `json:"action"`
+	User     User     `json:"User"`
+	Current  Current  `json:"current"`
+	Previous Previous `json:"previous"`
 }
 
 type User struct {
 	RealName string `json:"real_name"`
 }
 
-type Current struct	{
-	Submitted_On string `json:"submitted_on"`
-	Values []Values `json:"values"`
+type Current struct {
+	Submitted_On string   `json:"submitted_on"`
+	Values       []Values `json:"values"`
 }
 
 type Previous struct {
@@ -38,26 +38,26 @@ type Previous struct {
 }
 
 type ReverseLinks struct {
-	ID int `json:"id"`
+	ID      int     `json:"id"`
 	Tracker Tracker `json:"tracker"`
 }
 
 type Tracker struct {
-	ID int `json:"id"`
-	Label string `json:"label"`
+	ID      int     `json:"id"`
+	Label   string  `json:"label"`
 	Project Project `json:"project"`
 }
 
-type Project struct	{
-	ID int `json:"id"`
+type Project struct {
+	ID    int    `json:"id"`
 	Label string `json:"label"`
 }
 
 type Values struct {
-	Label string `json:"label"`
+	Label         string         `json:"label"`
 	Reverse_Links []ReverseLinks `json:"reverse_links"`
-	VValues []VValues `json:"values"`
-	Value interface{} `json:"value"`
+	VValues       []VValues      `json:"values"`
+	Value         interface{}    `json:"value"`
 }
 
 type VValues struct {
