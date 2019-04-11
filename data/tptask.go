@@ -29,8 +29,8 @@ type User struct {
 }
 
 type Current struct {
-	Submitted_On string   `json:"submitted_on"`
-	Values       []Values `json:"values"`
+	SubmittedOn string   `json:"submitted_on"`
+	Values      []Values `json:"values"`
 }
 
 type Previous struct {
@@ -54,10 +54,10 @@ type Project struct {
 }
 
 type Values struct {
-	Label         string         `json:"label"`
-	Reverse_Links []ReverseLinks `json:"reverse_links"`
-	VValues       []VValues      `json:"values"`
-	Value         interface{}    `json:"value"`
+	Label        string         `json:"label"`
+	ReverseLinks []ReverseLinks `json:"reverse_links"`
+	VValues      []VValues      `json:"values"`
+	Value        interface{}    `json:"value"`
 }
 
 type VValues struct {

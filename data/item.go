@@ -2,16 +2,16 @@ package data
 
 type Repository struct {
 	Name        string `json:"name"`
-	Url         string `json:"url"`
+	URL         string `json:"url"`
 	Description string `json:"description"`
 	Homepage    string `json:"homepage"`
 }
 
 type Commit struct {
-	Id        string `json:"id"`
+	ID        string `json:"id"`
 	Message   string `json:"message"`
 	Timestamp string `json:"timestamp"`
-	Url       string `json:"url"`
+	URL       string `json:"url"`
 	Author    Author `json:"author"`
 }
 

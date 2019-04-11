@@ -345,18 +345,18 @@ func PushHandler(body string) {
 
 		// Message
 		lastCommit := j.Commits[len(j.Commits)-1]
-		commitCount := strconv.FormatFloat(j.Total_commits_count, 'f', 0, 64)
+		commitCount := strconv.FormatFloat(j.TotalCommitsCount, 'f', 0, 64)
 		if ShowAllCommits {
-			message += "Push on *" + j.Repository.Name + "* by *" + j.User_name + "* at *" + dateString + "* on branch *" + j.Ref + "*:" + n // First line
-			message += commitCount + " commits :"                                                                                            // Second line
+			message += "Push on *" + j.Repository.Name + "* by *" + j.UserName + "* at *" + dateString + "* on branch *" + j.Ref + "*:" + n // First line
+			message += commitCount + " commits :"                                                                                           // Second line
 			for i := range j.Commits {
 				c := j.Commits[i]
-				message += n + "< " + c.Url + " | " + c.Id[0:7] + " >: " + "_" + MessageEncode(c.Message) + "_"
+				message += n + "< " + c.URL + " | " + c.ID[0:7] + " >: " + "_" + MessageEncode(c.Message) + "_"
 			}
 		} else {
-			message += "[PUSH] " + n + "Push on *" + j.Repository.Name + "* by *" + j.User_name + "* at *" + dateString + "* on branch *" + j.Ref + "*:" + n // First line
-			message += "Last commit : < " + lastCommit.Url + " | " + lastCommit.Id + " > :" + n                                                              // Second line
-			message += "```" + MessageEncode(lastCommit.Message) + "```"                                                                                     // Third line (last commit message)
+			message += "[PUSH] " + n + "Push on *" + j.Repository.Name + "* by *" + j.UserName + "* at *" + dateString + "* on branch *" + j.Ref + "*:" + n // First line
+			message += "Last commit : < " + lastCommit.URL + " | " + lastCommit.ID + " > :" + n                                                             // Second line
+			message += "```" + MessageEncode(lastCommit.Message) + "```"                                                                                    // Third line (last commit message)
 		}
 		SendWorkchatMessage(ThreadGitlab, message, ChatType)
 	}
@@ -388,12 +388,12 @@ func MergeHandler(body string) {
 		// Send the message
 
 		// Date parsing (parsing result example : 18 November 2014 - 14:34)
-		date, err = time.Parse("2006-01-02 15:04:05 UTC", j.Object_attributes.Created_at)
+		date, err = time.Parse("2006-01-02 15:04:05 UTC", j.ObjectAttributes.CreatedAt)
 		var dateString = date.Format("02 Jan 06 15:04")
 
 		// Message
-		message += "[MERGE REQUEST " + strings.ToUpper(j.Object_attributes.State) + "] " + n + "Target : *" + j.Object_attributes.Target.Name + "/" + j.Object_attributes.Target_branch + "* Source : *" + j.Object_attributes.Source.Name + "/" + j.Object_attributes.Source_branch + "* at *" + dateString + "* " + n // First line
-		message += "Description: " + MessageEncode(j.Object_attributes.Description)                                                                                                                                                                                                                                     // Third line (last commit message)
+		message += "[MERGE REQUEST " + strings.ToUpper(j.ObjectAttributes.State) + "] " + n + "Target : *" + j.ObjectAttributes.Target.Name + "/" + j.ObjectAttributes.TargetBranch + "* Source : *" + j.ObjectAttributes.Source.Name + "/" + j.ObjectAttributes.SourceBranch + "* at *" + dateString + "* " + n // First line
+		message += "Description: " + MessageEncode(j.ObjectAttributes.Description)                                                                                                                                                                                                                               // Third line (last commit message)
 
 		if len(j.Changes.Labels.Current) > 0 || len(j.Changes.Labels.Previous) > 0 {
 			message += n + " [LABELS] "
@@ -454,22 +454,22 @@ func BuildHandler(body string) {
 		}
 
 		// Test if the message is already sent
-		if currentBuildID < j.Build_id {
+		if currentBuildID < j.BuildID {
 			// Not sent
-			currentBuildID = j.Build_id // Update current build ID
+			currentBuildID = j.BuildID // Update current build ID
 
 			// Send the message
 
 			// Date parsing (parsing result example : 18 November 2014 - 14:34)
-			date, err = time.Parse("2006-01-02T15:04:05Z07:00", j.Push_data.Commits[0].Timestamp)
+			date, err = time.Parse("2006-01-02T15:04:05Z07:00", j.PushData.Commits[0].Timestamp)
 			var dateString = strconv.Itoa(date.Day()) + " " + date.Month().String() + " " + strconv.Itoa(date.Year()) +
 				" - " + strconv.Itoa(date.Hour()) + ":" + strconv.Itoa(date.Minute())
 
 			// Message
-			lastCommit := j.Push_data.Commits[len(j.Push_data.Commits)-1]
-			message += "[BUILD] " + n + strings.ToUpper(j.Build_status) + " : Push on *" + j.Push_data.Repository.Name + "* by *" + j.Push_data.User_name + "* at *" + dateString + "* on branch *" + j.Ref + "*:" + n // First line
-			message += "Last commit : <" + lastCommit.Url + "|" + lastCommit.Id + "> :" + n                                                                                                                            // Second line
-			message += "```" + MessageEncode(lastCommit.Message) + "```"                                                                                                                                               // Third line (last commit message)
+			lastCommit := j.PushData.Commits[len(j.PushData.Commits)-1]
+			message += "[BUILD] " + n + strings.ToUpper(j.BuildStatus) + " : Push on *" + j.PushData.Repository.Name + "* by *" + j.PushData.UserName + "* at *" + dateString + "* on branch *" + j.Ref + "*:" + n // First line
+			message += "Last commit : <" + lastCommit.URL + "|" + lastCommit.ID + "> :" + n                                                                                                                        // Second line
+			message += "```" + MessageEncode(lastCommit.Message) + "```"                                                                                                                                           // Third line (last commit message)
 			SendWorkchatMessage(ThreadGitlab, message, ChatType)
 		} else {
 			// Already sent
@@ -514,9 +514,9 @@ func TaskHandler(body string) {
 			case "Status":
 				Task.Status = val.VValues[0].Label
 			case "Links":
-				if len(val.Reverse_Links) > 0 {
-					Task.ProjectURL = TuleapURL + "projects/" + string(val.Reverse_Links[0].Tracker.Project.ID)
-					Task.ProjectName = val.Reverse_Links[0].Tracker.Project.Label
+				if len(val.ReverseLinks) > 0 {
+					Task.ProjectURL = TuleapURL + "projects/" + string(val.ReverseLinks[0].Tracker.Project.ID)
+					Task.ProjectName = val.ReverseLinks[0].Tracker.Project.Label
 				}
 			case "Artifact ID":
 				Task.TaskID = strconv.FormatFloat(val.Value.(float64), 'f', 0, 64)
@@ -590,7 +590,7 @@ func AppCenterHandler(body string) {
 		} else {
 			message += "*Crash!!! [" + j.AppDisplayName + "]*" + n // First line
 			message += "Reason *" + j.Reason + "* [" + j.Name + "] on " + dateString + n
-			message += "URL: " + j.Url // Third line (last commit message)
+			message += "URL: " + j.URL // Third line (last commit message)
 		}
 
 		SendWorkchatMessage(ThreadAppCenter, message, ChatType)

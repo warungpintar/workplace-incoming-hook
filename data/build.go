@@ -4,27 +4,27 @@ package data
 	Stuctures of a build
 */
 type Build struct {
-	Build_id          float64   `json:"build_id"`
-	Build_status      string    `json:"build_status"`
-	Build_started_at  string    `json:"build_started_at"`
-	Build_finished_at string    `json:"build_finished_at"`
-	Project_id        float64   `json:"project_id"`
-	Project_name      string    `json:"project_name"`
-	Gitlab_url        string    `json:"gitlab_url"`
-	Ref               string    `json:"ref"`
-	Sha               string    `json:"sha"`
-	Before_sha        string    `json:"before_sha"`
-	Push_data         Push_Data `json:"push_data"`
+	BuildID         float64  `json:"build_id"`
+	BuildStatus     string   `json:"build_status"`
+	BuildStartedAt  string   `json:"build_started_at"`
+	BuildFinishedAt string   `json:"build_finished_at"`
+	ProjectID       float64  `json:"project_id"`
+	ProjectName     string   `json:"project_name"`
+	GitlabURL       string   `json:"gitlab_url"`
+	Ref             string   `json:"ref"`
+	Sha             string   `json:"sha"`
+	BeforeSha       string   `json:"before_sha"`
+	PushData        PushData `json:"push_data"`
 }
 
-type Push_Data struct {
-	Before              string     `json:"before"`
-	After               string     `json:"after"`
-	Ref                 string     `json:"ref"`
-	User_id             float64    `json:"user_id"`
-	User_name           string     `json:"user_name"`
-	Project_id          float64    `json:"project_id"`
-	Repository          Repository `json:"repository"`
-	Commits             []Commit   `json:"commits"`
-	Total_commits_count float64    `json:"total_commits_count"`
+type PushData struct {
+	Before            string     `json:"before"`
+	After             string     `json:"after"`
+	Ref               string     `json:"ref"`
+	UserID            float64    `json:"user_id"`
+	UserName          string     `json:"user_name"`
+	ProjectID         float64    `json:"project_id"`
+	Repository        Repository `json:"repository"`
+	Commits           []Commit   `json:"commits"`
+	TotalCommitsCount float64    `json:"total_commits_count"`
 }

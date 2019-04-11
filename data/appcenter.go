@@ -22,7 +22,7 @@ type AppCenter struct {
 	Reason              string `json:"reason"`
 	ReleaseNotes        string `json:"release_notes"`
 	Name                string `json:"name"`
-	Url                 string `json:"url"`
+	URL                 string `json:"url"`
 	MandatoryUpdate     bool   `json:"mandatory_update"`
 	DistributionGroupID string `json:"distribution_group_id"`
 }
