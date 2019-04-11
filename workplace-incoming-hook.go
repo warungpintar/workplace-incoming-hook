@@ -1,6 +1,8 @@
 package main
 
 import (
+	"fmt"
+
 	"github.com/warungpintar/workplace-incoming-hook/data"
 
 	strip "github.com/grokify/html-strip-tags-go"
@@ -343,9 +345,17 @@ func PushHandler(body string) {
 				message += n + "< " + c.URL + " | " + c.ID[0:7] + " >: " + "_" + MessageEncode(c.Message) + "_"
 			}
 		} else {
-			message += "[PUSH] " + n + "Push on *" + j.Repository.Name + "* by *" + j.UserName + "* at *" + dateString + "* on branch *" + j.Ref + "*:" + n // First line
-			message += "Last commit : < " + lastCommit.URL + " | " + lastCommit.ID + " > :" + n                                                             // Second line
-			message += "```" + MessageEncode(lastCommit.Message) + "```"                                                                                    // Third line (last commit message)
+			// First line
+			message += "[PUSH] " + n
+			message += fmt.Sprintf("Push on *%s* by *%s* at *%s* on branch *%s*: ",
+				j.Repository.Name,
+				j.UserName,
+				dateString,
+				j.Ref) + n
+			// Second line
+			message += "Last commit : < " + lastCommit.URL + " | " + lastCommit.ID + " > :" + n
+			// Third line (last commit message)
+			message += "```" + MessageEncode(lastCommit.Message) + "```"
 		}
 		SendWorkchatMessage(ThreadGitlab, message, ChatType)
 	}
@@ -381,8 +391,16 @@ func MergeHandler(body string) {
 		var dateString = date.Format("02 Jan 06 15:04")
 
 		// Message
-		message += "[MERGE REQUEST " + strings.ToUpper(j.ObjectAttributes.State) + "] " + n + "Target : *" + j.ObjectAttributes.Target.Name + "/" + j.ObjectAttributes.TargetBranch + "* Source : *" + j.ObjectAttributes.Source.Name + "/" + j.ObjectAttributes.SourceBranch + "* at *" + dateString + "* " + n // First line
-		message += "Description: " + MessageEncode(j.ObjectAttributes.Description)                                                                                                                                                                                                                               // Third line (last commit message)
+		// First line
+		message += fmt.Sprintf("[MERGE REQUEST %s] ", strings.ToUpper(j.ObjectAttributes.State)) + n
+		message += fmt.Sprintf("Target : *%s/%s* Source : *%s/%s* at *%s* ",
+			j.ObjectAttributes.Target.Name,
+			j.ObjectAttributes.TargetBranch,
+			j.ObjectAttributes.Source.Name,
+			j.ObjectAttributes.SourceBranch,
+			dateString) + n
+		// Third line (last commit message)
+		message += "Description: " + MessageEncode(j.ObjectAttributes.Description)
 
 		if len(j.Changes.Labels.Current) > 0 || len(j.Changes.Labels.Previous) > 0 {
 			message += n + " [LABELS] "
@@ -456,9 +474,18 @@ func BuildHandler(body string) {
 
 			// Message
 			lastCommit := j.PushData.Commits[len(j.PushData.Commits)-1]
-			message += "[BUILD] " + n + strings.ToUpper(j.BuildStatus) + " : Push on *" + j.PushData.Repository.Name + "* by *" + j.PushData.UserName + "* at *" + dateString + "* on branch *" + j.Ref + "*:" + n // First line
-			message += "Last commit : <" + lastCommit.URL + "|" + lastCommit.ID + "> :" + n                                                                                                                        // Second line
-			message += "```" + MessageEncode(lastCommit.Message) + "```"                                                                                                                                           // Third line (last commit message)
+			// First line
+			message += "[BUILD] " + n
+			message += fmt.Sprintf("%s : Push on *%s* by *%s* at *%s* on branch *%s*:",
+				strings.ToUpper(j.BuildStatus),
+				j.PushData.Repository.Name,
+				j.PushData.UserName,
+				dateString,
+				j.Ref) + n
+			// Second line
+			message += "Last commit : <" + lastCommit.URL + "|" + lastCommit.ID + "> :" + n
+			// Third line (last commit message)
+			message += "```" + MessageEncode(lastCommit.Message) + "```"
 			SendWorkchatMessage(ThreadGitlab, message, ChatType)
 		}
 	}
@@ -526,8 +553,17 @@ func TaskHandler(body string) {
 			var dateString = date.Format("02 Jan 06 15:04")
 
 			// Message
-			message += "Move Task *#" + Task.TaskID + "* [" + Task.TaskTitle + "] on Project *" + Task.ProjectName + "* by *" + Task.Name + "* at *" + dateString + "* from *" + Task.OldStatus + "* to *" + Task.Status + "*" + n // First line
-			message += "Description: " + MessageEncode(Task.Details) + n                                                                                                                                                           // Third line (last commit message)
+			// First line
+			message += fmt.Sprintf("Move Task *#%s* [%s] on Project *%s* by *%s* at *%s* from *%s* to *%s*",
+				Task.TaskID,
+				Task.TaskTitle,
+				Task.ProjectName,
+				Task.Name,
+				dateString,
+				Task.OldStatus,
+				Task.Status) + n
+			// Third line (last commit message)
+			message += "Description: " + MessageEncode(Task.Details) + n
 			message += "Task URL : " + Task.TrackerURL
 			SendWorkchatMessage(ThreadTuleap, message, ChatType)
 		}
