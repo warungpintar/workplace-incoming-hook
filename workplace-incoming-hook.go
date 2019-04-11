@@ -23,11 +23,9 @@ import (
 */
 var (
 	// Logging
-	l       logo.Logger
-	Loggers []*logo.Logger
+	l logo.Logger
 
 	// Configuration
-	Thread              string // Bot's system channel
 	ThreadGitlab        string
 	ThreadTuleap        string
 	ThreadAppCenter     string
@@ -56,13 +54,6 @@ type GitlabServ struct{}
 */
 var (
 	ConfigFile = flag.String("f", "config.json", "Configuration file")
-)
-
-const (
-	Bot   int = iota
-	Push  int = iota
-	Merge int = iota
-	Build int = iota
 )
 
 /*
@@ -134,7 +125,7 @@ func Post(target string, payload string) (int, string) {
 
 	// Build request
 	l.Debug(bytes.NewBufferString(payload))
-	req, err = http.NewRequest("POST", target, bytes.NewBufferString(payload))
+	req, _ = http.NewRequest("POST", target, bytes.NewBufferString(payload))
 	req.Header.Set("Content-Type", "application/json")
 
 	// Do request
@@ -154,9 +145,9 @@ func Post(target string, payload string) (int, string) {
 		l.Error("Error : Curl POST : " + err.Error())
 		if res != nil {
 			return res.StatusCode, ""
-		} else {
-			return 0, ""
 		}
+
+		return 0, ""
 	}
 	defer res.Body.Close()
 
@@ -177,11 +168,7 @@ func Post(target string, payload string) (int, string) {
 */
 
 func MessageEncodeX(origin string) string {
-	var result string
-
-	result = strings.Replace(origin, "%5CnX", "\\n\\n", -1)
-
-	return result
+	return strings.Replace(origin, "%5CnX", "\\n\\n", -1)
 }
 
 func MessageEncode(origin string) string {
@@ -265,7 +252,9 @@ func (s *GitlabServ) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	}
 
 	// Read http request body and put it in a string
-	buffer.ReadFrom(r.Body)
+	if _, err := buffer.ReadFrom(r.Body); err != nil {
+		l.Error("Error : Read http request body failed :", err)
+	}
 	body = buffer.String()
 
 	// Debug information
@@ -303,7 +292,7 @@ func CommentHandler(body string) {
 	}
 
 	var json = []byte(body)
-	req, err := http.NewRequest("POST", URLNoteHookFunction, bytes.NewBuffer(json))
+	req, _ := http.NewRequest("POST", URLNoteHookFunction, bytes.NewBuffer(json))
 	req.Header.Set("X-Gitlab-Event", "Note Hook")
 	req.Header.Set("Content-Type", "application/json")
 
@@ -340,7 +329,7 @@ func PushHandler(body string) {
 		// Send the message
 
 		// Date parsing (parsing result example : 18 November 2014 - 14:34)
-		date, err = time.Parse("2006-01-02T15:04:05Z07:00", j.Commits[0].Timestamp)
+		date, _ = time.Parse("2006-01-02T15:04:05Z07:00", j.Commits[0].Timestamp)
 		var dateString = date.Format("02 Jan 06 15:04")
 
 		// Message
@@ -388,7 +377,7 @@ func MergeHandler(body string) {
 		// Send the message
 
 		// Date parsing (parsing result example : 18 November 2014 - 14:34)
-		date, err = time.Parse("2006-01-02 15:04:05 UTC", j.ObjectAttributes.CreatedAt)
+		date, _ = time.Parse("2006-01-02 15:04:05 UTC", j.ObjectAttributes.CreatedAt)
 		var dateString = date.Format("02 Jan 06 15:04")
 
 		// Message
@@ -461,7 +450,7 @@ func BuildHandler(body string) {
 			// Send the message
 
 			// Date parsing (parsing result example : 18 November 2014 - 14:34)
-			date, err = time.Parse("2006-01-02T15:04:05Z07:00", j.PushData.Commits[0].Timestamp)
+			date, _ = time.Parse("2006-01-02T15:04:05Z07:00", j.PushData.Commits[0].Timestamp)
 			var dateString = strconv.Itoa(date.Day()) + " " + date.Month().String() + " " + strconv.Itoa(date.Year()) +
 				" - " + strconv.Itoa(date.Hour()) + ":" + strconv.Itoa(date.Minute())
 
@@ -471,9 +460,6 @@ func BuildHandler(body string) {
 			message += "Last commit : <" + lastCommit.URL + "|" + lastCommit.ID + "> :" + n                                                                                                                        // Second line
 			message += "```" + MessageEncode(lastCommit.Message) + "```"                                                                                                                                           // Third line (last commit message)
 			SendWorkchatMessage(ThreadGitlab, message, ChatType)
-		} else {
-			// Already sent
-			// Do nothing
 		}
 	}
 
@@ -536,7 +522,7 @@ func TaskHandler(body string) {
 		}
 
 		if Task.Status != Task.OldStatus {
-			date, err = time.Parse(time.RFC3339, Task.SubmittedOn)
+			date, _ = time.Parse(time.RFC3339, Task.SubmittedOn)
 			var dateString = date.Format("02 Jan 06 15:04")
 
 			// Message
@@ -574,7 +560,7 @@ func AppCenterHandler(body string) {
 		// Send the message
 
 		// Date parsing (parsing result example : 18 November 2014 - 14:34)
-		date, err = time.Parse(time.RFC3339, j.SentAt)
+		date, _ = time.Parse(time.RFC3339, j.SentAt)
 		var dateString = date.Format("02 Jan 06 15:04")
 
 		// Message
@@ -606,5 +592,5 @@ func main() {
 	l.EnableAllLevels()                                      // Configure Logger
 	LoadConf()                                               // Load configuration
 	l.Info(BotStartMessage)                                  // Logging
-	http.ListenAndServe(":"+Port, &GitlabServ{})             // Run HTTP server for push hook
+	l.Error(http.ListenAndServe(":"+Port, &GitlabServ{}))    // Run HTTP server for push hook
 }
