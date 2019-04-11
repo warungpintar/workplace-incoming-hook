@@ -4,27 +4,27 @@ package data
 	Stuctures of a build
 */
 type Build struct {
-	Build_id          float64
-	Build_status      string
-	Build_started_at  string
-	Build_finished_at string
-	Project_id        float64
-	Project_name      string
-	Gitlab_url        string
-	Ref               string
-	Sha               string
-	Before_sha        string
-	Push_data         Push_Data
+	BuildID         float64  `json:"build_id"`
+	BuildStatus     string   `json:"build_status"`
+	BuildStartedAt  string   `json:"build_started_at"`
+	BuildFinishedAt string   `json:"build_finished_at"`
+	ProjectID       float64  `json:"project_id"`
+	ProjectName     string   `json:"project_name"`
+	GitlabURL       string   `json:"gitlab_url"`
+	Ref             string   `json:"ref"`
+	Sha             string   `json:"sha"`
+	BeforeSha       string   `json:"before_sha"`
+	PushData        PushData `json:"push_data"`
 }
 
-type Push_Data struct {
-	Before              string
-	After               string
-	Ref                 string
-	User_id             float64
-	User_name           string
-	Project_id          float64
-	Repository          Repository
-	Commits             []Commit
-	Total_commits_count float64
+type PushData struct {
+	Before            string     `json:"before"`
+	After             string     `json:"after"`
+	Ref               string     `json:"ref"`
+	UserID            float64    `json:"user_id"`
+	UserName          string     `json:"user_name"`
+	ProjectID         float64    `json:"project_id"`
+	Repository        Repository `json:"repository"`
+	Commits           []Commit   `json:"commits"`
+	TotalCommitsCount float64    `json:"total_commits_count"`
 }

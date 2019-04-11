@@ -4,40 +4,40 @@ package data
 	Stuctures of a merge
 */
 type Merge struct {
-	Object_kind       string
-	Object_attributes Object_attributes
-	Changes           Changes `json:"changes"`
+	ObjectKind       string           `json:"object_kind"`
+	ObjectAttributes ObjectAttributes `json:"object_attributes"`
+	Changes          Changes          `json:"changes"`
 }
 
-type Object_attributes struct {
-	Id                float64
-	Target_branch     string
-	Source_branch     string
-	Source_project_id float64
-	Author_id         float64
-	Assignee_id       float64
-	Title             string
-	Created_at        string
-	Updated_at        string
-	St_commits        float64
-	St_diffs          float64
-	Milestone_id      float64
-	State             string
-	Merge_status      string
-	Target_project_id float64
-	Iid               float64
-	Description       string
-	Source            Branche
-	Target            Branche
-	Last_commit       Commit
+type ObjectAttributes struct {
+	ID              float64 `json:"id"`
+	TargetBranch    string  `json:"target_branch"`
+	SourceBranch    string  `json:"source_branch"`
+	SourceProjectID float64 `json:"source_project_id"`
+	AuthorID        float64 `json:"author_id"`
+	AssigneeID      float64 `json:"assignee_id"`
+	Title           string  `json:"title"`
+	CreatedAt       string  `json:"created_at"`
+	UpdatedAt       string  `json:"updated_at"`
+	StCommits       float64 `json:"st_commits"`
+	StDiffs         float64 `json:"st_diffs"`
+	MilestoneID     float64 `json:"milestone_id"`
+	State           string  `json:"state"`
+	MergeStatus     string  `json:"merge_status"`
+	TargetProjectID float64 `json:"target_project_id"`
+	Iid             float64 `json:"iid"`
+	Description     string  `json:"description"`
+	Source          Branch  `json:"source"`
+	Target          Branch  `json:"target"`
+	LastCommit      Commit  `json:"last_commit"`
 }
 
-type Branche struct {
-	Name             string
-	Ssh_url          string
-	Http_url         string
-	Visibility_level float64
-	Namespace        string
+type Branch struct {
+	Name            string  `json:"name"`
+	SSHURL          string  `json:"ssh_url"`
+	HTTPURL         string  `json:"http_url"`
+	VisibilityLevel float64 `json:"visibility_level"`
+	Namespace       string  `json:"namespace"`
 }
 
 // Changes object shape from Gitlab payload

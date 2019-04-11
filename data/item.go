@@ -1,21 +1,21 @@
 package data
 
 type Repository struct {
-	Name        string
-	Url         string
-	Description string
-	Homepage    string
+	Name        string `json:"name"`
+	URL         string `json:"url"`
+	Description string `json:"description"`
+	Homepage    string `json:"homepage"`
 }
 
 type Commit struct {
-	Id        string
-	Message   string
-	Timestamp string
-	Url       string
-	Author    Author
+	ID        string `json:"id"`
+	Message   string `json:"message"`
+	Timestamp string `json:"timestamp"`
+	URL       string `json:"url"`
+	Author    Author `json:"author"`
 }
 
 type Author struct {
-	Name  string
-	Email string
+	Name  string `json:"name"`
+	Email string `json:"email"`
 }
