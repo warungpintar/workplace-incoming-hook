@@ -1,6 +1,8 @@
 package main
 
 import (
+	"fmt"
+
 	"github.com/warungpintar/workplace-incoming-hook/data"
 
 	strip "github.com/grokify/html-strip-tags-go"
@@ -23,11 +25,9 @@ import (
 */
 var (
 	// Logging
-	l       logo.Logger
-	Loggers []*logo.Logger
+	l logo.Logger
 
 	// Configuration
-	Thread              string // Bot's system channel
 	ThreadGitlab        string
 	ThreadTuleap        string
 	ThreadAppCenter     string
@@ -56,13 +56,6 @@ type GitlabServ struct{}
 */
 var (
 	ConfigFile = flag.String("f", "config.json", "Configuration file")
-)
-
-const (
-	Bot   int = iota
-	Push  int = iota
-	Merge int = iota
-	Build int = iota
 )
 
 /*
@@ -134,7 +127,7 @@ func Post(target string, payload string) (int, string) {
 
 	// Build request
 	l.Debug(bytes.NewBufferString(payload))
-	req, err = http.NewRequest("POST", target, bytes.NewBufferString(payload))
+	req, _ = http.NewRequest("POST", target, bytes.NewBufferString(payload))
 	req.Header.Set("Content-Type", "application/json")
 
 	// Do request
@@ -154,9 +147,9 @@ func Post(target string, payload string) (int, string) {
 		l.Error("Error : Curl POST : " + err.Error())
 		if res != nil {
 			return res.StatusCode, ""
-		} else {
-			return 0, ""
 		}
+
+		return 0, ""
 	}
 	defer res.Body.Close()
 
@@ -177,11 +170,7 @@ func Post(target string, payload string) (int, string) {
 */
 
 func MessageEncodeX(origin string) string {
-	var result string
-
-	result = strings.Replace(origin, "%5CnX", "\\n\\n", -1)
-
-	return result
+	return strings.Replace(origin, "%5CnX", "\\n\\n", -1)
 }
 
 func MessageEncode(origin string) string {
@@ -265,7 +254,9 @@ func (s *GitlabServ) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	}
 
 	// Read http request body and put it in a string
-	buffer.ReadFrom(r.Body)
+	if _, err := buffer.ReadFrom(r.Body); err != nil {
+		l.Error("Error : Read http request body failed :", err)
+	}
 	body = buffer.String()
 
 	// Debug information
@@ -303,7 +294,7 @@ func CommentHandler(body string) {
 	}
 
 	var json = []byte(body)
-	req, err := http.NewRequest("POST", URLNoteHookFunction, bytes.NewBuffer(json))
+	req, _ := http.NewRequest("POST", URLNoteHookFunction, bytes.NewBuffer(json))
 	req.Header.Set("X-Gitlab-Event", "Note Hook")
 	req.Header.Set("Content-Type", "application/json")
 
@@ -340,7 +331,7 @@ func PushHandler(body string) {
 		// Send the message
 
 		// Date parsing (parsing result example : 18 November 2014 - 14:34)
-		date, err = time.Parse("2006-01-02T15:04:05Z07:00", j.Commits[0].Timestamp)
+		date, _ = time.Parse("2006-01-02T15:04:05Z07:00", j.Commits[0].Timestamp)
 		var dateString = date.Format("02 Jan 06 15:04")
 
 		// Message
@@ -354,9 +345,17 @@ func PushHandler(body string) {
 				message += n + "< " + c.URL + " | " + c.ID[0:7] + " >: " + "_" + MessageEncode(c.Message) + "_"
 			}
 		} else {
-			message += "[PUSH] " + n + "Push on *" + j.Repository.Name + "* by *" + j.UserName + "* at *" + dateString + "* on branch *" + j.Ref + "*:" + n // First line
-			message += "Last commit : < " + lastCommit.URL + " | " + lastCommit.ID + " > :" + n                                                             // Second line
-			message += "```" + MessageEncode(lastCommit.Message) + "```"                                                                                    // Third line (last commit message)
+			// First line
+			message += "[PUSH] " + n
+			message += fmt.Sprintf("Push on *%s* by *%s* at *%s* on branch *%s*: ",
+				j.Repository.Name,
+				j.UserName,
+				dateString,
+				j.Ref) + n
+			// Second line
+			message += "Last commit : < " + lastCommit.URL + " | " + lastCommit.ID + " > :" + n
+			// Third line (last commit message)
+			message += "```" + MessageEncode(lastCommit.Message) + "```"
 		}
 		SendWorkchatMessage(ThreadGitlab, message, ChatType)
 	}
@@ -388,12 +387,20 @@ func MergeHandler(body string) {
 		// Send the message
 
 		// Date parsing (parsing result example : 18 November 2014 - 14:34)
-		date, err = time.Parse("2006-01-02 15:04:05 UTC", j.ObjectAttributes.CreatedAt)
+		date, _ = time.Parse("2006-01-02 15:04:05 UTC", j.ObjectAttributes.CreatedAt)
 		var dateString = date.Format("02 Jan 06 15:04")
 
 		// Message
-		message += "[MERGE REQUEST " + strings.ToUpper(j.ObjectAttributes.State) + "] " + n + "Target : *" + j.ObjectAttributes.Target.Name + "/" + j.ObjectAttributes.TargetBranch + "* Source : *" + j.ObjectAttributes.Source.Name + "/" + j.ObjectAttributes.SourceBranch + "* at *" + dateString + "* " + n // First line
-		message += "Description: " + MessageEncode(j.ObjectAttributes.Description)                                                                                                                                                                                                                               // Third line (last commit message)
+		// First line
+		message += fmt.Sprintf("[MERGE REQUEST %s] ", strings.ToUpper(j.ObjectAttributes.State)) + n
+		message += fmt.Sprintf("Target : *%s/%s* Source : *%s/%s* at *%s* ",
+			j.ObjectAttributes.Target.Name,
+			j.ObjectAttributes.TargetBranch,
+			j.ObjectAttributes.Source.Name,
+			j.ObjectAttributes.SourceBranch,
+			dateString) + n
+		// Third line (last commit message)
+		message += "Description: " + MessageEncode(j.ObjectAttributes.Description)
 
 		if len(j.Changes.Labels.Current) > 0 || len(j.Changes.Labels.Previous) > 0 {
 			message += n + " [LABELS] "
@@ -461,19 +468,25 @@ func BuildHandler(body string) {
 			// Send the message
 
 			// Date parsing (parsing result example : 18 November 2014 - 14:34)
-			date, err = time.Parse("2006-01-02T15:04:05Z07:00", j.PushData.Commits[0].Timestamp)
+			date, _ = time.Parse("2006-01-02T15:04:05Z07:00", j.PushData.Commits[0].Timestamp)
 			var dateString = strconv.Itoa(date.Day()) + " " + date.Month().String() + " " + strconv.Itoa(date.Year()) +
 				" - " + strconv.Itoa(date.Hour()) + ":" + strconv.Itoa(date.Minute())
 
 			// Message
 			lastCommit := j.PushData.Commits[len(j.PushData.Commits)-1]
-			message += "[BUILD] " + n + strings.ToUpper(j.BuildStatus) + " : Push on *" + j.PushData.Repository.Name + "* by *" + j.PushData.UserName + "* at *" + dateString + "* on branch *" + j.Ref + "*:" + n // First line
-			message += "Last commit : <" + lastCommit.URL + "|" + lastCommit.ID + "> :" + n                                                                                                                        // Second line
-			message += "```" + MessageEncode(lastCommit.Message) + "```"                                                                                                                                           // Third line (last commit message)
+			// First line
+			message += "[BUILD] " + n
+			message += fmt.Sprintf("%s : Push on *%s* by *%s* at *%s* on branch *%s*:",
+				strings.ToUpper(j.BuildStatus),
+				j.PushData.Repository.Name,
+				j.PushData.UserName,
+				dateString,
+				j.Ref) + n
+			// Second line
+			message += "Last commit : <" + lastCommit.URL + "|" + lastCommit.ID + "> :" + n
+			// Third line (last commit message)
+			message += "```" + MessageEncode(lastCommit.Message) + "```"
 			SendWorkchatMessage(ThreadGitlab, message, ChatType)
-		} else {
-			// Already sent
-			// Do nothing
 		}
 	}
 
@@ -536,12 +549,21 @@ func TaskHandler(body string) {
 		}
 
 		if Task.Status != Task.OldStatus {
-			date, err = time.Parse(time.RFC3339, Task.SubmittedOn)
+			date, _ = time.Parse(time.RFC3339, Task.SubmittedOn)
 			var dateString = date.Format("02 Jan 06 15:04")
 
 			// Message
-			message += "Move Task *#" + Task.TaskID + "* [" + Task.TaskTitle + "] on Project *" + Task.ProjectName + "* by *" + Task.Name + "* at *" + dateString + "* from *" + Task.OldStatus + "* to *" + Task.Status + "*" + n // First line
-			message += "Description: " + MessageEncode(Task.Details) + n                                                                                                                                                           // Third line (last commit message)
+			// First line
+			message += fmt.Sprintf("Move Task *#%s* [%s] on Project *%s* by *%s* at *%s* from *%s* to *%s*",
+				Task.TaskID,
+				Task.TaskTitle,
+				Task.ProjectName,
+				Task.Name,
+				dateString,
+				Task.OldStatus,
+				Task.Status) + n
+			// Third line (last commit message)
+			message += "Description: " + MessageEncode(Task.Details) + n
 			message += "Task URL : " + Task.TrackerURL
 			SendWorkchatMessage(ThreadTuleap, message, ChatType)
 		}
@@ -574,7 +596,7 @@ func AppCenterHandler(body string) {
 		// Send the message
 
 		// Date parsing (parsing result example : 18 November 2014 - 14:34)
-		date, err = time.Parse(time.RFC3339, j.SentAt)
+		date, _ = time.Parse(time.RFC3339, j.SentAt)
 		var dateString = date.Format("02 Jan 06 15:04")
 
 		// Message
@@ -606,5 +628,5 @@ func main() {
 	l.EnableAllLevels()                                      // Configure Logger
 	LoadConf()                                               // Load configuration
 	l.Info(BotStartMessage)                                  // Logging
-	http.ListenAndServe(":"+Port, &GitlabServ{})             // Run HTTP server for push hook
+	l.Error(http.ListenAndServe(":"+Port, &GitlabServ{}))    // Run HTTP server for push hook
 }
