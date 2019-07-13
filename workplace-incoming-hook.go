@@ -399,7 +399,11 @@ func MergeHandler(body string) {
 			j.ObjectAttributes.Source.Name,
 			j.ObjectAttributes.SourceBranch,
 			dateString) + n
-		// Third line (last commit message)
+
+		// Second line (URL link for merge request location)
+		message += fmt.Sprintf("Link : *%s*", j.ObjectAttributes.URL) + n
+
+		// Third Line (Description of merge request)
 		message += "Description: " + MessageEncode(j.ObjectAttributes.Description)
 
 		if len(j.Changes.Labels.Current) > 0 || len(j.Changes.Labels.Previous) > 0 {

@@ -19,6 +19,7 @@ type ObjectAttributes struct {
 	Title           string  `json:"title"`
 	CreatedAt       string  `json:"created_at"`
 	UpdatedAt       string  `json:"updated_at"`
+	URL             string  `json:"url"`
 	StCommits       float64 `json:"st_commits"`
 	StDiffs         float64 `json:"st_diffs"`
 	MilestoneID     float64 `json:"milestone_id"`
