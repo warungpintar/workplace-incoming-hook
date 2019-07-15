@@ -4,6 +4,7 @@ import (
 	"fmt"
 
 	"github.com/warungpintar/workplace-incoming-hook/data"
+	"github.com/warungpintar/workplace-incoming-hook/helper"
 
 	strip "github.com/grokify/html-strip-tags-go"
 	"github.com/nurza/logo"
@@ -43,6 +44,7 @@ var (
 	TuleapURL           string
 	Port                string
 	URLNoteHookFunction string
+	TimeZone            string
 
 	// Misc
 	currentBuildID float64   // Current build ID
@@ -78,6 +80,7 @@ func LoadConf() {
 		TuleapURL           string
 		Port                string
 		URLNoteHookFunction string
+		TimeZone            string
 	}{}
 
 	content, err := ioutil.ReadFile(*ConfigFile)
@@ -105,6 +108,7 @@ func LoadConf() {
 	ThreadAppCenter = conf.ThreadAppCenter
 	ThreadTuleap = conf.ThreadTuleap
 	URLNoteHookFunction = conf.URLNoteHookFunction
+	TimeZone = conf.TimeZone
 }
 
 /*
@@ -312,9 +316,9 @@ func CommentHandler(body string) {
 
 func PushHandler(body string) {
 	var j data.Push
-	var err error      // Error catching
-	var message string // Bot's message
-	var date time.Time // Time of the last commit
+	var err error         // Error catching
+	var message string    // Bot's message
+	var dateString string // Time of the last commit
 
 	// Parse json and put it in a the data.Build structure
 	err = json.Unmarshal([]byte(body), &j)
@@ -328,11 +332,10 @@ func PushHandler(body string) {
 			l.Debug("JsonObject =", j)
 		}
 
-		// Send the message
+		// Build the message
 
-		// Date parsing (parsing result example : 18 November 2014 - 14:34)
-		date, _ = time.Parse("2006-01-02T15:04:05Z07:00", j.Commits[0].Timestamp)
-		var dateString = date.Format("02 Jan 06 15:04")
+		// Date parsing (parsing result example : 16 Jun 19 20:18)
+		dateString, _ = helper.ConvertTimeToZone(j.Commits[0].Timestamp, TimeZone)
 
 		// Message
 		lastCommit := j.Commits[len(j.Commits)-1]
@@ -368,9 +371,9 @@ func PushHandler(body string) {
 */
 func MergeHandler(body string) {
 	var j data.Merge
-	var err error      // Error catching
-	var message string // Bot's message
-	var date time.Time // Time of the last commit
+	var err error         // Error catching
+	var message string    // Bot's message
+	var dateString string // Time of the last commit
 
 	// Parse json and put it in a the data.Build structure
 	err = json.Unmarshal([]byte(body), &j)
@@ -384,11 +387,10 @@ func MergeHandler(body string) {
 			l.Debug("JsonObject =", j)
 		}
 
-		// Send the message
+		// Build the message
 
-		// Date parsing (parsing result example : 18 November 2014 - 14:34)
-		date, _ = time.Parse("2006-01-02 15:04:05 UTC", j.ObjectAttributes.CreatedAt)
-		var dateString = date.Format("02 Jan 06 15:04")
+		// Date parsing (parsing result example : 16 Jun 19 20:18)
+		dateString, _ = helper.ConvertTimeToZone(j.ObjectAttributes.CreatedAt, TimeZone)
 
 		// Message
 		// First line
