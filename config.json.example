@@ -10,5 +10,6 @@
         "ChatType":             "group",
         "TuleapURL":            "http://example.com/",
         "Port":                 "80",
-        "UrlNoteHookFunction":  ""
+        "UrlNoteHookFunction":  "",
+        "TimeZone:              "Asia/Jakarta"
 }

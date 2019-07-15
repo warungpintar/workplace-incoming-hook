@@ -12,3 +12,6 @@
 *.out
 config.json
 workplace-incoming-hook
+
+# ignore IDE 
+.idea/
