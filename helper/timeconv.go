@@ -2,6 +2,8 @@ package helper
 
 import (
 	"time"
+
+	"github.com/araddon/dateparse"
 )
 
 /*
@@ -11,11 +13,10 @@ import (
 	@param timezone
 */
 func ConvertTimeToZone(timeFromGitlab string, strZone string) (string, error) {
-
-	// adjustment format
-	dateTime, err := time.Parse("2006-01-02 15:04:05 UTC", timeFromGitlab)
+	// Parse an unknown date format, detect the layout.
+	dateTime, err := dateparse.ParseAny(timeFromGitlab)
 	if err != nil {
-		return timeFromGitlab, err // invalid dateTime format
+		return timeFromGitlab, err
 	}
 
 	// validate time zone
@@ -27,4 +28,5 @@ func ConvertTimeToZone(timeFromGitlab string, strZone string) (string, error) {
 
 	local := dateTime.In(location)
 	return local.Format("02 Jan 06 15:04"), nil
+
 }
