@@ -336,7 +336,6 @@ func PushHandler(body string) {
 
 		// Date parsing (parsing result example : 16 Jun 19 20:18)
 		dateString, _ = helper.ConvertTimeToZone(j.Commits[0].Timestamp, TimeZone)
-
 		// Message
 		lastCommit := j.Commits[len(j.Commits)-1]
 		commitCount := strconv.FormatFloat(j.TotalCommitsCount, 'f', 0, 64)
@@ -360,7 +359,17 @@ func PushHandler(body string) {
 			// Third line (last commit message)
 			message += "```" + MessageEncode(lastCommit.Message) + "```"
 		}
-		SendWorkchatMessage(ThreadGitlab, message, ChatType)
+		// SendWorkchatMessage(ThreadGitlab, message, ChatType)
+		switch gr := helper.GroupDetection(j.Repository.URL); gr {
+		case "back-end":
+			SendWorkchatMessage(ThreadTuleap, message, ChatType) // Change ThreadTuleap to your group Thread
+		case "wartech":
+			SendWorkchatMessage(ThreadTuleap, message, ChatType) // Change ThreadTuleap to your group Thread
+		case "tech-data":
+			SendWorkchatMessage(ThreadTuleap, message, ChatType) // Change ThreadTuleap to your group Thread
+		default:
+			SendWorkchatMessage(ThreadGitlab, message, ChatType)
+		}
 	}
 }
 
