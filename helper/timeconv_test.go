@@ -16,6 +16,7 @@ func TestConvertTimeToZone(t *testing.T) {
 	}{
 		{"success", args{"2019-06-16 13:18:36 UTC", "Asia/Jakarta"}, "16 Jun 19 20:18", false},
 		{"success", args{"2019-06-16 13:18:36 UTC", "Asia/Singapore"}, "16 Jun 19 21:18", false},
+		{"success", args{"2019-06-16T13:18:36Z", "Asia/Jakarta"}, "16 Jun 19 20:18", false},
 		{"invalid_timezone", args{"2019-06-16 13:18:36 UTC", "Asia/anywhere"}, "16 Jun 19 13:18", true},
 		{"invalid_datetime", args{"2019-06-16XXX 13:18:36 UTC", "Asia/anywhere"}, "2019-06-16XXX 13:18:36 UTC", true},
 	}
