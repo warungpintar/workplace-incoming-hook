@@ -32,6 +32,7 @@ var (
 	ThreadGitlab        string
 	ThreadTuleap        string
 	ThreadAppCenter     string
+	ThreadBackend       string
 	PushIcon            string // Push icon (Fb emoji)
 	MergeIcon           string // Merge icon (Fb emoji)
 	BuildIcon           string // Build icon (Fb emoji)
@@ -67,6 +68,7 @@ func LoadConf() {
 	conf := struct {
 		ThreadGitlab        string
 		ThreadAppCenter     string
+		ThreadBackend       string
 		ThreadTuleap        string
 		PushIcon            string
 		MergeIcon           string
@@ -105,6 +107,7 @@ func LoadConf() {
 	TuleapURL = conf.TuleapURL
 	Port = conf.Port
 	ThreadGitlab = conf.ThreadGitlab
+	ThreadBackend = conf.ThreadBackend
 	ThreadAppCenter = conf.ThreadAppCenter
 	ThreadTuleap = conf.ThreadTuleap
 	URLNoteHookFunction = conf.URLNoteHookFunction
@@ -362,7 +365,7 @@ func PushHandler(body string) {
 		// SendWorkchatMessage(ThreadGitlab, message, ChatType)
 		switch gr := helper.GroupDetection(j.Repository.URL); gr {
 		case "back-end":
-			SendWorkchatMessage(ThreadTuleap, message, ChatType) // Change ThreadTuleap to your group Thread
+			SendWorkchatMessage(ThreadBackend, message, ChatType) // Change ThreadTuleap to your group Thread
 		case "wartech":
 			SendWorkchatMessage(ThreadTuleap, message, ChatType) // Change ThreadTuleap to your group Thread
 		case "tech-data":
@@ -448,7 +451,17 @@ func MergeHandler(body string) {
 			}
 		}
 
-		SendWorkchatMessage(ThreadGitlab, message, ChatType)
+		// SendWorkchatMessage(ThreadGitlab, message, ChatType)
+		switch gr := helper.GroupDetection(j.ObjectAttributes.Source.SSHURL); gr {
+		case "back-end":
+			SendWorkchatMessage(ThreadBackend, message, ChatType) // Change ThreadTuleap to your group Thread
+		case "wartech":
+			SendWorkchatMessage(ThreadTuleap, message, ChatType) // Change ThreadTuleap to your group Thread
+		case "tech-data":
+			SendWorkchatMessage(ThreadTuleap, message, ChatType) // Change ThreadTuleap to your group Thread
+		default:
+			SendWorkchatMessage(ThreadGitlab, message, ChatType)
+		}
 	}
 }
 
