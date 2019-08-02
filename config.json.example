@@ -12,4 +12,11 @@
         "Port":                 "80",
         "UrlNoteHookFunction":  "",
         "TimeZone:              "Asia/Jakarta"
+        "ThreadGitlabGroup" : [
+        		{
+        			"name":"back-end",
+        			"link": "git@gitlab.example.co:back-end",
+        			"channel": "BACKEND_THREAD"
+        		}
+        	]
 }

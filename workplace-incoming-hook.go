@@ -24,6 +24,12 @@ import (
 /*
 	Global variables
 */
+type GitlabGroup struct {
+	Name    string
+	Link    string
+	Channel string
+}
+
 var (
 	// Logging
 	l logo.Logger
@@ -32,7 +38,6 @@ var (
 	ThreadGitlab        string
 	ThreadTuleap        string
 	ThreadAppCenter     string
-	ThreadBackend       string
 	PushIcon            string // Push icon (Fb emoji)
 	MergeIcon           string // Merge icon (Fb emoji)
 	BuildIcon           string // Build icon (Fb emoji)
@@ -46,6 +51,7 @@ var (
 	Port                string
 	URLNoteHookFunction string
 	TimeZone            string
+	ThreadGitlabGroup   []GitlabGroup
 
 	// Misc
 	currentBuildID float64   // Current build ID
@@ -68,8 +74,8 @@ func LoadConf() {
 	conf := struct {
 		ThreadGitlab        string
 		ThreadAppCenter     string
-		ThreadBackend       string
 		ThreadTuleap        string
+		ThreadGitlabGroup   []GitlabGroup
 		PushIcon            string
 		MergeIcon           string
 		BuildIcon           string
@@ -107,11 +113,11 @@ func LoadConf() {
 	TuleapURL = conf.TuleapURL
 	Port = conf.Port
 	ThreadGitlab = conf.ThreadGitlab
-	ThreadBackend = conf.ThreadBackend
 	ThreadAppCenter = conf.ThreadAppCenter
 	ThreadTuleap = conf.ThreadTuleap
 	URLNoteHookFunction = conf.URLNoteHookFunction
 	TimeZone = conf.TimeZone
+	ThreadGitlabGroup = conf.ThreadGitlabGroup
 }
 
 /*
@@ -362,17 +368,14 @@ func PushHandler(body string) {
 			// Third line (last commit message)
 			message += "```" + MessageEncode(lastCommit.Message) + "```"
 		}
-		// SendWorkchatMessage(ThreadGitlab, message, ChatType)
-		switch gr := helper.GroupDetection(j.Repository.URL); gr {
-		case "back-end":
-			SendWorkchatMessage(ThreadBackend, message, ChatType) // Change ThreadTuleap to your group Thread
-		case "wartech":
-			SendWorkchatMessage(ThreadTuleap, message, ChatType) // Change ThreadTuleap to your group Thread
-		case "tech-data":
-			SendWorkchatMessage(ThreadTuleap, message, ChatType) // Change ThreadTuleap to your group Thread
-		default:
-			SendWorkchatMessage(ThreadGitlab, message, ChatType)
+		/*Send To Gitlab Group*/
+		for _,val := range ThreadGitlabGroup{
+			link := strings.Split(j.Repository.URL,"/")
+			if link[0] == val.Link{
+				SendWorkchatMessage(val.Channel,message,ChatType)
+			}
 		}
+		SendWorkchatMessage(ThreadGitlab, message, ChatType)
 	}
 }
 
@@ -451,17 +454,13 @@ func MergeHandler(body string) {
 			}
 		}
 
-		// SendWorkchatMessage(ThreadGitlab, message, ChatType)
-		switch gr := helper.GroupDetection(j.ObjectAttributes.Source.SSHURL); gr {
-		case "back-end":
-			SendWorkchatMessage(ThreadBackend, message, ChatType) // Change ThreadTuleap to your group Thread
-		case "wartech":
-			SendWorkchatMessage(ThreadTuleap, message, ChatType) // Change ThreadTuleap to your group Thread
-		case "tech-data":
-			SendWorkchatMessage(ThreadTuleap, message, ChatType) // Change ThreadTuleap to your group Thread
-		default:
-			SendWorkchatMessage(ThreadGitlab, message, ChatType)
+		for _,val := range ThreadGitlabGroup{
+			link := strings.Split(j.ObjectAttributes.Source.SSHURL,"/")
+			if link[0] == val.Link{
+				SendWorkchatMessage(val.Channel,message,ChatType)
+			}
 		}
+		SendWorkchatMessage(ThreadGitlab, message, ChatType)
 	}
 }
 
