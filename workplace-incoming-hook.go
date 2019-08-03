@@ -2,11 +2,10 @@ package main
 
 import (
 	"fmt"
-
 	"github.com/warungpintar/workplace-incoming-hook/data"
 	"github.com/warungpintar/workplace-incoming-hook/helper"
 
-	strip "github.com/grokify/html-strip-tags-go"
+	"github.com/grokify/html-strip-tags-go"
 	"github.com/nurza/logo"
 
 	"bytes"
@@ -24,6 +23,11 @@ import (
 /*
 	Global variables
 */
+type GitlabGroup struct {
+	Link    string
+	Channel string
+}
+
 var (
 	// Logging
 	l logo.Logger
@@ -45,6 +49,7 @@ var (
 	Port                string
 	URLNoteHookFunction string
 	TimeZone            string
+	ThreadGitlabGroup   []GitlabGroup
 
 	// Misc
 	currentBuildID float64   // Current build ID
@@ -68,6 +73,7 @@ func LoadConf() {
 		ThreadGitlab        string
 		ThreadAppCenter     string
 		ThreadTuleap        string
+		ThreadGitlabGroup   []GitlabGroup
 		PushIcon            string
 		MergeIcon           string
 		BuildIcon           string
@@ -109,6 +115,7 @@ func LoadConf() {
 	ThreadTuleap = conf.ThreadTuleap
 	URLNoteHookFunction = conf.URLNoteHookFunction
 	TimeZone = conf.TimeZone
+	ThreadGitlabGroup = conf.ThreadGitlabGroup
 }
 
 /*
@@ -336,7 +343,6 @@ func PushHandler(body string) {
 
 		// Date parsing (parsing result example : 16 Jun 19 20:18)
 		dateString, _ = helper.ConvertTimeToZone(j.Commits[0].Timestamp, TimeZone)
-
 		// Message
 		lastCommit := j.Commits[len(j.Commits)-1]
 		commitCount := strconv.FormatFloat(j.TotalCommitsCount, 'f', 0, 64)
@@ -360,6 +366,7 @@ func PushHandler(body string) {
 			// Third line (last commit message)
 			message += "```" + MessageEncode(lastCommit.Message) + "```"
 		}
+		SendWorkChatGroupMessage(j.Repository.URL, message)
 		SendWorkchatMessage(ThreadGitlab, message, ChatType)
 	}
 }
@@ -438,8 +445,21 @@ func MergeHandler(body string) {
 				}
 			}
 		}
-
+		SendWorkChatGroupMessage(j.ObjectAttributes.Source.SSHURL, message)
 		SendWorkchatMessage(ThreadGitlab, message, ChatType)
+	}
+}
+
+/*
+	Handler function to handle send message to gitlab grup
+	@param repourl string, message string
+*/
+
+func SendWorkChatGroupMessage(repourl string, message string) {
+	for _, val := range ThreadGitlabGroup {
+		if strings.Contains(repourl, val.Link) {
+			SendWorkchatMessage(val.Channel, message, ChatType)
+		}
 	}
 }
 
