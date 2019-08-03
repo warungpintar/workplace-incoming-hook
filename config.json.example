@@ -14,9 +14,12 @@
         "TimeZone:              "Asia/Jakarta"
         "ThreadGitlabGroup" : [
         		{
-        			"name":"back-end",
         			"link": "git@gitlab.example.co:back-end",
         			"channel": "BACKEND_THREAD"
-        		}
+        		},
+        		{
+                	"link": "git@gitlab.example.co:back-end/some-service.git",
+                	"channel": "YOUR_OWN_THREAD"
+                }
         	]
 }

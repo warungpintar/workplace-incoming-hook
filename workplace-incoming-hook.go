@@ -2,11 +2,10 @@ package main
 
 import (
 	"fmt"
-
 	"github.com/warungpintar/workplace-incoming-hook/data"
 	"github.com/warungpintar/workplace-incoming-hook/helper"
 
-	strip "github.com/grokify/html-strip-tags-go"
+	"github.com/grokify/html-strip-tags-go"
 	"github.com/nurza/logo"
 
 	"bytes"
@@ -25,7 +24,6 @@ import (
 	Global variables
 */
 type GitlabGroup struct {
-	Name    string
 	Link    string
 	Channel string
 }
@@ -368,14 +366,8 @@ func PushHandler(body string) {
 			// Third line (last commit message)
 			message += "```" + MessageEncode(lastCommit.Message) + "```"
 		}
-		/*Send To Gitlab Group*/
-		for _,val := range ThreadGitlabGroup{
-			link := strings.Split(j.Repository.URL,"/")
-			if link[0] == val.Link{
-				SendWorkchatMessage(val.Channel,message,ChatType)
-			}
-		}
-		SendWorkchatMessage(ThreadGitlab, message, ChatType)
+		go SendWorkChatGroupMessage(j.Repository.URL, message)
+		go SendWorkchatMessage(ThreadGitlab, message, ChatType)
 	}
 }
 
@@ -453,14 +445,21 @@ func MergeHandler(body string) {
 				}
 			}
 		}
+		go SendWorkChatGroupMessage(j.ObjectAttributes.Source.SSHURL, message)
+		go SendWorkchatMessage(ThreadGitlab, message, ChatType)
+	}
+}
 
-		for _,val := range ThreadGitlabGroup{
-			link := strings.Split(j.ObjectAttributes.Source.SSHURL,"/")
-			if link[0] == val.Link{
-				SendWorkchatMessage(val.Channel,message,ChatType)
-			}
+/*
+	Handler function to handle send message to gitlab grup
+	@param repourl string, message string
+*/
+
+func SendWorkChatGroupMessage(repourl string, message string) {
+	for _, val := range ThreadGitlabGroup {
+		if strings.Contains(repourl, val.Link) {
+			SendWorkchatMessage(val.Channel, message, ChatType)
 		}
-		SendWorkchatMessage(ThreadGitlab, message, ChatType)
 	}
 }
 
