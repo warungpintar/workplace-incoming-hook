@@ -366,8 +366,8 @@ func PushHandler(body string) {
 			// Third line (last commit message)
 			message += "```" + MessageEncode(lastCommit.Message) + "```"
 		}
-		go SendWorkChatGroupMessage(j.Repository.URL, message)
-		go SendWorkchatMessage(ThreadGitlab, message, ChatType)
+		SendWorkChatGroupMessage(j.Repository.URL, message)
+		SendWorkchatMessage(ThreadGitlab, message, ChatType)
 	}
 }
 
@@ -445,8 +445,8 @@ func MergeHandler(body string) {
 				}
 			}
 		}
-		go SendWorkChatGroupMessage(j.ObjectAttributes.Source.SSHURL, message)
-		go SendWorkchatMessage(ThreadGitlab, message, ChatType)
+		SendWorkChatGroupMessage(j.ObjectAttributes.Source.SSHURL, message)
+		SendWorkchatMessage(ThreadGitlab, message, ChatType)
 	}
 }
 
